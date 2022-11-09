@@ -17,22 +17,26 @@ static Queue_t **all_queues = NULL;
 static sig_atomic_t firstMaiusc = F;
 static sig_atomic_t notNumberStart = F;
 
-void printOut(char** arr, size_t size){
-  if (notNumberStart){
-    if (arr[0][0] >= 48 && arr[0][0] <= 57){
+void printOut(char **arr, size_t size) {
+  if (notNumberStart) {
+    if (arr[0][0] >= 48 && arr[0][0] <= 57) {
       return;
     }
   }
   char finalString[BUFF] = {0x0};
   size_t point = 0;
   for (size_t i = 0; i < size; i++) {
-      memccpy(finalString+point, arr[i], '\0', strlen(arr[i]));
-      point+=strlen(arr[i]);
-    }
-  memcpy(finalString+point, "\n", 1);
+    memccpy(finalString + point, arr[i], '\0', strlen(arr[i]));
+    point += strlen(arr[i]);
+  }
+  memcpy(finalString + point, "\n", 1);
   write(1, finalString, strlen(finalString));
-  if (firstMaiusc){
-    finalString[0]-=32;
+  if (firstMaiusc) {
+    if (arr[0][0] >= 48 && arr[0][0] <= 57) {
+      return;
+    } else {
+      finalString[0] -= 32;
+    }
     write(1, finalString, strlen(finalString));
   }
 }
@@ -43,22 +47,22 @@ void swapPP(char **f, char **s) {
   *s = t;
 }
 
-void seqPerm(char **arr, size_t size){
-  unsigned short *P = (unsigned short*)calloc(size,sizeof(unsigned short));
+void seqPerm(char **arr, size_t size) {
+  unsigned short *P = (unsigned short *)calloc(size, sizeof(unsigned short));
   size_t i = 1;
   size_t j;
-  while (i < size){
-    if (P[i] < i){
-      j = (i & 1)*P[i];
+  while (i < size) {
+    if (P[i] < i) {
+      j = (i & 1) * P[i];
       swapPP(&arr[i], &arr[j]);
       printOut(arr, size);
       P[i]++;
       i = 1;
-    }else{
+    } else {
       P[i] = 0;
       i++;
     }
-  } 
+  }
   free(P);
 }
 
@@ -72,7 +76,7 @@ void *threadPerm(void *in) {
     }
     printOut(words->aux, words->len);
     seqPerm(words->aux, words->len);
-    for (size_t i = 0; i < words->len; i++){
+    for (size_t i = 0; i < words->len; i++) {
       free(words->aux[i]);
     }
     free(words->aux);
@@ -91,22 +95,21 @@ void genBin(unsigned short *arr, size_t s, size_t occ) {
       size_t pointer = 0;
       for (size_t j = 0; j < wordSize; j++) {
         if (arr[j] == 1) {
-          auxPerm[pointer] = (char *)calloc(strlen(dict[j])+1,sizeof(char));
-          memccpy(auxPerm[pointer], dict[j], '\0' , strlen(dict[j]));
+          auxPerm[pointer] = (char *)calloc(strlen(dict[j]) + 1, sizeof(char));
+          memccpy(auxPerm[pointer], dict[j], '\0', strlen(dict[j]));
           pointer++;
         }
       }
-      push_queue(all_queues[occ-1], auxPerm, occ);
+      push_queue(all_queues[occ - 1], auxPerm, occ);
     }
   } else {
-    arr[s-1] = 0;
-    genBin(arr, s-1, occ++);
-    arr[s-1] = 1;
-    genBin(arr, s-1, occ);
+    arr[s - 1] = 0;
+    genBin(arr, s - 1, occ++);
+    arr[s - 1] = 1;
+    genBin(arr, s - 1, occ);
   }
   return;
 }
-
 
 int main(int argc, char **argv) {
   if (argc < 5) {
@@ -146,9 +149,9 @@ int main(int argc, char **argv) {
   }
   wordSize = argc - optind;
   queueN = maxLen;
-  threadN = (size_t)(maxLen*(maxLen+1))/2;
-  all_queues = (Queue_t**)malloc(sizeof(Queue_t*)*queueN);
-  for (size_t i = 0; i < queueN; i++){
+  threadN = (size_t)(maxLen * (maxLen + 1)) / 2;
+  all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queueN);
+  for (size_t i = 0; i < queueN; i++) {
     all_queues[i] = init_queue();
   }
   char **input_words = (char **)malloc(sizeof(char *) * wordSize);
@@ -157,12 +160,13 @@ int main(int argc, char **argv) {
     optind++;
   }
   dict = input_words;
-  unsigned short *bin = (unsigned short *)calloc(wordSize, sizeof(unsigned short));
+  unsigned short *bin =
+      (unsigned short *)calloc(wordSize, sizeof(unsigned short));
   pthread_t tworker[threadN];
   size_t pos = 0;
   for (size_t i = 0; i < queueN; i++) {
     size_t j = i + 1;
-    while (j > 0){
+    while (j > 0) {
       pthread_create(&tworker[pos], NULL, threadPerm, (void *)i);
       j--;
       pos++;
@@ -170,14 +174,14 @@ int main(int argc, char **argv) {
   }
   genBin(bin, wordSize, 0);
   free(bin);
-  for (size_t i = 0; i < queueN; i++){
+  for (size_t i = 0; i < queueN; i++) {
     nowrite_queue(all_queues[i]);
   }
   for (size_t i = 0; i < threadN; i++) {
     pthread_join(tworker[i], NULL);
   }
   free(input_words);
-  for (size_t i = 0; i < queueN; i++){
+  for (size_t i = 0; i < queueN; i++) {
     free_queue(all_queues[i]);
     free(all_queues[i]);
   }
