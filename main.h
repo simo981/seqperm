@@ -17,7 +17,7 @@ void genBin(unsigned short *arr, size_t s, size_t occ);
 void exitUsage(char *plus);
 
 void exitUsage(char *plus) {
-  printf("%s\n./wlgen -s <minLen> -e <maxLen> chars/words\n",
+  printf("%s\n./wlgen [-n]NoNumberAtStart [-f]FirstLetterUpperCase -s <MinLen> -e <MaxLen> chars/words/numbers\n",
          plus);
   exit(EXIT_FAILURE);
 }
