@@ -2,6 +2,7 @@
 #define QUEUE
 #include <pthread.h>
 #include <stddef.h>
+#include <stdlib.h>
 #define MAXLEN 4096
 
 static sig_atomic_t finished = 0;
