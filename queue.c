@@ -1,9 +1,9 @@
 #include "queue.h"
+#include <assert.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 Queue_t *init_queue() {
   Queue_t *Q = (Queue_t *)malloc(sizeof(Queue_t));
@@ -11,14 +11,14 @@ Queue_t *init_queue() {
     perror("POINTER_QUEUE_INIT_FAIL");
     exit(EXIT_FAILURE);
   }
-  Q->words = (input_t **)malloc(sizeof(input_t*) * MAXLEN);
+  Q->words = (input_t **)malloc(sizeof(input_t *) * MAXLEN);
   if (Q->words == NULL) {
     perror("BUCKET_QUEUE_INIT_FAIL");
     exit(EXIT_FAILURE);
   }
-  pthread_mutex_init(&Q->lock,NULL);
-  pthread_cond_init(&Q->full,NULL);
-  pthread_cond_init(&Q->empty,NULL);
+  pthread_mutex_init(&Q->lock, NULL);
+  pthread_cond_init(&Q->full, NULL);
+  pthread_cond_init(&Q->empty, NULL);
   Q->maxsize = MAXLEN;
   Q->head = 0;
   Q->tail = 0;
@@ -31,7 +31,7 @@ void push_queue(Queue_t *Q, char **aux, size_t len) {
   while (Q->actualsize == Q->maxsize) {
     pthread_cond_wait(&Q->full, &Q->lock);
   }
-  input_t* inQueue = (input_t*)malloc(sizeof(input_t));
+  input_t *inQueue = (input_t *)malloc(sizeof(input_t));
   inQueue->aux = aux;
   inQueue->len = len;
   Q->words[Q->tail] = inQueue;
@@ -45,7 +45,7 @@ input_t *pop_queue(Queue_t *Q) {
   input_t *aux = NULL;
   pthread_mutex_lock(&Q->lock);
   while (Q->actualsize == 0) {
-    if (finished) {
+    if (no_write) {
       pthread_mutex_unlock(&Q->lock);
       return NULL;
     }
@@ -59,13 +59,6 @@ input_t *pop_queue(Queue_t *Q) {
   return aux;
 }
 
-void nowrite_queue(Queue_t *Q) {
-  pthread_mutex_lock(&Q->lock);
-  finished = 1;
-  pthread_cond_broadcast(&Q->empty);
-  pthread_mutex_unlock(&Q->lock);
-}
-
 void free_queue(Queue_t *Q) {
   pthread_mutex_lock(&Q->lock);
   pthread_cond_destroy(&Q->full);
@@ -74,3 +67,7 @@ void free_queue(Queue_t *Q) {
   free(Q->words);
   pthread_mutex_unlock(&Q->lock);
 }
+
+void set_no_write() { no_write = 1; }
+
+void broadcast_empty(Queue_t *Q) { pthread_cond_broadcast(&Q->empty); }
