@@ -9,16 +9,16 @@
 #define T 1
 #define F 0
 
-static size_t maxLen;
-static size_t minLen;
+static size_t max_len;
+static size_t min_len;
 static char **dict;
-static size_t wordSize;
+static size_t word_size;
 static Queue_t **all_queues = NULL;
-static sig_atomic_t firstMaiusc = F;
-static sig_atomic_t notNumberStart = F;
+static sig_atomic_t first_maiusc = F;
+static sig_atomic_t not_number_start = F;
 
-void printOut(char **arr, size_t size) {
-  if (notNumberStart) {
+void print_out(char **arr, size_t size) {
+  if (not_number_start) {
     if (arr[0][0] >= 48 && arr[0][0] <= 57) {
       return;
     }
@@ -31,7 +31,7 @@ void printOut(char **arr, size_t size) {
   }
   memcpy(finalString + point, "\n", 1);
   write(1, finalString, strlen(finalString));
-  if (firstMaiusc) {
+  if (first_maiusc) {
     if (arr[0][0] >= 48 && arr[0][0] <= 57) {
       return;
     } else {
@@ -41,21 +41,21 @@ void printOut(char **arr, size_t size) {
   }
 }
 
-void swapPP(char **f, char **s) {
+void swap_p(char **f, char **s) {
   char *t = *f;
   *f = *s;
   *s = t;
 }
 
-void seqPerm(char **arr, size_t size) {
+void seq_perm(char **arr, size_t size) {
   unsigned short *P = (unsigned short *)calloc(size, sizeof(unsigned short));
   size_t i = 1;
   size_t j;
   while (i < size) {
     if (P[i] < i) {
       j = (i & 1) * P[i];
-      swapPP(&arr[i], &arr[j]);
-      printOut(arr, size);
+      swap_p(&arr[i], &arr[j]);
+      print_out(arr, size);
       P[i]++;
       i = 1;
     } else {
@@ -66,7 +66,7 @@ void seqPerm(char **arr, size_t size) {
   free(P);
 }
 
-void *threadPerm(void *in) {
+void *thread_perm(void *in) {
   size_t queuePos = (size_t)in;
   input_t *words;
   for (;;) {
@@ -74,8 +74,8 @@ void *threadPerm(void *in) {
     if (words == NULL) {
       break;
     }
-    printOut(words->aux, words->len);
-    seqPerm(words->aux, words->len);
+    print_out(words->aux, words->len);
+    seq_perm(words->aux, words->len);
     for (size_t i = 0; i < words->len; i++) {
       free(words->aux[i]);
     }
@@ -85,15 +85,15 @@ void *threadPerm(void *in) {
   return NULL;
 }
 
-void genBin(unsigned short *arr, size_t s, size_t occ) {
-  if (occ > maxLen) {
+void gen_bin(unsigned short *arr, size_t s, size_t occ) {
+  if (occ > max_len) {
     return;
   }
   if (s == 0) {
-    if (occ >= minLen) {
+    if (occ >= min_len) {
       char **auxPerm = (char **)malloc(sizeof(char *) * occ);
       size_t pointer = 0;
-      for (size_t j = 0; j < wordSize; j++) {
+      for (size_t j = 0; j < word_size; j++) {
         if (arr[j] == 1) {
           auxPerm[pointer] = (char *)calloc(strlen(dict[j]) + 1, sizeof(char));
           memccpy(auxPerm[pointer], dict[j], '\0', strlen(dict[j]));
@@ -104,42 +104,42 @@ void genBin(unsigned short *arr, size_t s, size_t occ) {
     }
   } else {
     arr[s - 1] = 0;
-    genBin(arr, s - 1, occ++);
+    gen_bin(arr, s - 1, occ++);
     arr[s - 1] = 1;
-    genBin(arr, s - 1, occ);
+    gen_bin(arr, s - 1, occ);
   }
   return;
 }
 
 int main(int argc, char **argv) {
   if (argc < 5) {
-    exitUsage("Missing Parameters");
+    exit_usage("Missing Parameters");
   }
   int opt;
-  size_t threadN;
-  size_t queueN;
+  size_t thread_n;
+  size_t queue_n;
   while ((opt = getopt(argc, argv, "nfs:e:")) != -1) {
     switch (opt) {
     case 'f': {
-      firstMaiusc = T;
+      first_maiusc = T;
       break;
     }
     case 'n': {
-      notNumberStart = T;
+      not_number_start = T;
       break;
     }
     case 's': {
-      err("Wrong minLen Param", minLen, atol(optarg));
-      le0("minLen can't be less than 0", minLen);
+      err("Wrong min_len Param", min_len, atol(optarg));
+      le0("min_len can't be less than 0", min_len);
       break;
     }
     case 'e': {
-      err("Wrong maxLen Param", maxLen, atol(optarg));
-      le0("maxLen can't be less than 0", maxLen);
+      err("Wrong max_len Param", max_len, atol(optarg));
+      le0("max_len can't be less than 0", max_len);
       break;
     }
     case '?': {
-      exitUsage("Wrong Params");
+      exit_usage("Wrong Params");
       break;
     }
     default: {
@@ -147,41 +147,42 @@ int main(int argc, char **argv) {
     }
     }
   }
-  wordSize = argc - optind;
-  queueN = maxLen;
-  threadN = (size_t)(maxLen * (maxLen + 1)) / 2;
-  all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queueN);
-  for (size_t i = 0; i < queueN; i++) {
+  word_size = argc - optind;
+  queue_n = max_len;
+  thread_n = (size_t)(max_len * (max_len + 1)) / 2;
+  all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queue_n);
+  for (size_t i = 0; i < queue_n; i++) {
     all_queues[i] = init_queue();
   }
-  char **input_words = (char **)malloc(sizeof(char *) * wordSize);
-  for (size_t i = 0; i < wordSize; i++) {
+  char **input_words = (char **)malloc(sizeof(char *) * word_size);
+  for (size_t i = 0; i < word_size; i++) {
     input_words[i] = argv[optind];
     optind++;
   }
   dict = input_words;
   unsigned short *bin =
-      (unsigned short *)calloc(wordSize, sizeof(unsigned short));
-  pthread_t tworker[threadN];
+      (unsigned short *)calloc(word_size, sizeof(unsigned short));
+  pthread_t tworker[thread_n];
   size_t pos = 0;
-  for (size_t i = 0; i < queueN; i++) {
+  for (size_t i = 0; i < queue_n; i++) {
     size_t j = i + 1;
     while (j > 0) {
-      pthread_create(&tworker[pos], NULL, threadPerm, (void *)i);
+      pthread_create(&tworker[pos], NULL, thread_perm, (void *)i);
       j--;
       pos++;
     }
   }
-  genBin(bin, wordSize, 0);
+  gen_bin(bin, word_size, 0);
   free(bin);
-  for (size_t i = 0; i < queueN; i++) {
-    nowrite_queue(all_queues[i]);
+  set_no_write();
+  for (size_t i = 0; i < queue_n; i++) {
+    broadcast_empty(all_queues[i]);
   }
-  for (size_t i = 0; i < threadN; i++) {
+  for (size_t i = 0; i < thread_n; i++) {
     pthread_join(tworker[i], NULL);
   }
   free(input_words);
-  for (size_t i = 0; i < queueN; i++) {
+  for (size_t i = 0; i < queue_n; i++) {
     free_queue(all_queues[i]);
     free(all_queues[i]);
   }
