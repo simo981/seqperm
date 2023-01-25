@@ -9,15 +9,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void printOut(char** arr, size_t size);
-void swapPP(char **f, char **s);
-void seqPerm(char **arr, size_t size);
-void *threadPerm(void *in);
-void genBin(unsigned short *arr, size_t s, size_t occ);
-void exitUsage(char *plus);
+void print_out(char **arr, size_t size);
+void swap_p(char **f, char **s);
+void seq_perm(char **arr, size_t size);
+void *thread_perm(void *in);
+void gen_bin(unsigned short *arr, size_t s, size_t occ);
+void exit_usage(char *plus);
 
-void exitUsage(char *plus) {
-  printf("%s\n./wlgen [-n]NoNumberAtStart [-f]FirstLetterUpperCase -s <MinLen> -e <MaxLen> chars/words/numbers\n",
+void exit_usage(char *plus) {
+  printf("%s\n./wlgen [-n]NoNumberAtStart [-f]FirstLetterUpperCase -s <MinLen> "
+         "-e <MaxLen> chars/words/numbers\n",
          plus);
   exit(EXIT_FAILURE);
 }
@@ -32,12 +33,12 @@ void exitUsage(char *plus) {
 
 #define le0(NAME, VAR)                                                         \
   if (VAR <= 0) {                                                              \
-    exitUsage(#NAME);                                                          \
+    exit_usage(#NAME);                                                         \
   }
 
 #define lt0(NAME, VAR)                                                         \
   if (VAR < 0) {                                                               \
-    exitUsage(#NAME);                                                          \
+    exit_usage(#NAME);                                                         \
   }
 
 #define exErr(NAME)                                                            \
