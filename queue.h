@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #define MAXLEN 4096
 
-static sig_atomic_t finished = 0;
+static sig_atomic_t no_write = 0;
 
 typedef struct input_aux_perm {
   char **aux;
@@ -13,7 +13,7 @@ typedef struct input_aux_perm {
 } input_t;
 
 typedef struct Queue {
-  input_t** words;
+  input_t **words;
   size_t head;
   size_t tail;
   size_t maxsize;
@@ -26,7 +26,7 @@ typedef struct Queue {
 Queue_t *init_queue(void);
 void push_queue(Queue_t *Q, char **aux, size_t len);
 input_t *pop_queue(Queue_t *Q);
-void nowrite_queue(Queue_t *Q);
 void free_queue(Queue_t *Q);
-
+void set_no_write();
+void broadcast_empty(Queue_t *Q);
 #endif
