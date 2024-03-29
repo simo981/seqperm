@@ -30,18 +30,18 @@ void print_out(char **arr, size_t size) {
     point += strlen(arr[i]);
   }
   memcpy(finalString + point, "\n", 1);
-  write(1, finalString, strlen(finalString));
+  printf("%s",finalString);
   if (first_maiusc) {
     if (arr[0][0] >= 48 && arr[0][0] <= 57) {
       return;
     } else {
       finalString[0] -= 32;
     }
-    write(1, finalString, strlen(finalString));
+    printf("%s",finalString);
   }
 }
 
-void swap_p(char **f, char **s) {
+inline void swap_p(char **f, char **s) {
   char *t = *f;
   *f = *s;
   *s = t;
@@ -174,8 +174,8 @@ int main(int argc, char **argv) {
   }
   gen_bin(bin, word_size, 0);
   free(bin);
-  set_no_write();
   for (size_t i = 0; i < queue_n; i++) {
+    set_no_write(all_queues[i]);
     broadcast_empty(all_queues[i]);
   }
   for (size_t i = 0; i < thread_n; i++) {

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Queue_t *init_queue() {
+Queue_t *init_queue(void) {
   Queue_t *Q = (Queue_t *)malloc(sizeof(Queue_t));
   if (Q == NULL) {
     perror("POINTER_QUEUE_INIT_FAIL");
@@ -20,6 +20,7 @@ Queue_t *init_queue() {
   pthread_cond_init(&Q->full, NULL);
   pthread_cond_init(&Q->empty, NULL);
   Q->maxsize = MAXLEN;
+  Q->no_write = 0;
   Q->head = 0;
   Q->tail = 0;
   Q->actualsize = 0;
@@ -45,7 +46,7 @@ input_t *pop_queue(Queue_t *Q) {
   input_t *aux = NULL;
   pthread_mutex_lock(&Q->lock);
   while (Q->actualsize == 0) {
-    if (no_write) {
+    if (Q->no_write) {
       pthread_mutex_unlock(&Q->lock);
       return NULL;
     }
@@ -65,9 +66,8 @@ void free_queue(Queue_t *Q) {
   pthread_cond_destroy(&Q->empty);
   pthread_mutex_destroy(&Q->lock);
   free(Q->words);
-  pthread_mutex_unlock(&Q->lock);
 }
 
-void set_no_write() { no_write = 1; }
+void set_no_write(Queue_t *Q) { Q->no_write = 1; }
 
 void broadcast_empty(Queue_t *Q) { pthread_cond_broadcast(&Q->empty); }
