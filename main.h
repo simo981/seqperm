@@ -9,9 +9,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void print_out(char **arr, size_t size);
+void print_out(char **arr, size_t size, size_t* lengths);
+void print_f_maiusc(char **arr, char *string);
+void print_number(char **arr, char *finalString, size_t run_len);
 void swap_p(char **f, char **s);
-void seq_perm(char **arr, size_t size);
+void seq_perm(char **arr, size_t size, size_t* lengths);
 void *thread_perm(void *in);
 void gen_bin(unsigned short *arr, size_t s, size_t occ);
 void exit_usage(char *plus);
