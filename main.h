@@ -8,43 +8,45 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <getopt.h>
+#include <stdbool.h>
 
-void print_out(char **arr, size_t size, size_t* lengths);
+void print_out(char **arr, size_t size);
 void print_f_maiusc(char **arr, char *string);
 void print_number(char **arr, char *finalString, size_t run_len);
 void swap_p(char **f, char **s);
-void seq_perm(char **arr, size_t size, size_t* lengths);
+void seq_perm(char **arr, size_t size);
 void *thread_perm(void *in);
+void free_inputs_optind(void);
 void gen_bin(unsigned short *arr, size_t s, size_t occ);
 void exit_usage(char *plus);
 
-void exit_usage(char *plus) {
-  printf("%s\n./wlgen [-n]NoNumberAtStart [-f]FirstLetterUpperCase -s <MinLen> "
-         "-e <MaxLen> chars/words/numbers\n",
-         plus);
+void exit_usage(char *plus)
+{
+  printf("%s\n./seqperm --upper (y/n) --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
   exit(EXIT_FAILURE);
 }
 
-#define err(NAME, VAR, CALL)                                                   \
-  errno = 0;                                                                   \
-  VAR = CALL;                                                                  \
-  if (errno != 0) {                                                            \
-    perror(#NAME);                                                             \
-    exit(EXIT_FAILURE);                                                        \
+#define ERR(NAME, VAR, CALL) \
+  errno = 0;                 \
+  VAR = CALL;                \
+  if (errno != 0)            \
+  {                          \
+    perror(#NAME);           \
+    free_inputs_optind();    \
+    exit(EXIT_FAILURE);      \
   }
 
-#define le0(NAME, VAR)                                                         \
-  if (VAR <= 0) {                                                              \
-    exit_usage(#NAME);                                                         \
+#define LE0(NAME, VAR)    \
+  if (VAR <= 0)           \
+  {                       \
+    perror(#NAME);        \
+    free_inputs_optind(); \
+    exit(EXIT_FAILURE);   \
   }
 
-#define lt0(NAME, VAR)                                                         \
-  if (VAR < 0) {                                                               \
-    exit_usage(#NAME);                                                         \
-  }
-
-#define exErr(NAME)                                                            \
-  perror(#NAME);                                                               \
+#define exErr(NAME) \
+  perror(#NAME);    \
   exit(EXIT_FAILURE);
 
 #endif
