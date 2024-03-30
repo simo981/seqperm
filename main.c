@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#define BUFF 512
+#include <getopt.h>
+#include <stdbool.h>
 
 static size_t max_len;
 static size_t min_len;
@@ -18,6 +19,30 @@ static size_t connectors_size = 0;
 static size_t last_size = 0;
 static const char *connector_placeholder = "|";
 static int first_maiusc = false;
+
+unsigned **binomialCoefficient(size_t n, size_t k)
+{
+  unsigned **C = (unsigned **)malloc(sizeof(unsigned *) * (n + 1));
+  for (int i = 0; i <= n; i++)
+  {
+    C[i] = (unsigned *)malloc(sizeof(unsigned) * (k + 1));
+  }
+  for (int i = 0; i <= n; i++)
+  {
+    for (int j = 0; j <= k && j <= i; j++)
+    {
+      if (j == 0 || j == i)
+      {
+        C[i][j] = 1;
+      }
+      else
+      {
+        C[i][j] = C[i - 1][j - 1] + C[i - 1][j];
+      }
+    }
+  }
+  return C;
+}
 
 void free_inputs_optind(void)
 {
@@ -163,17 +188,13 @@ void *thread_perm(void *in)
   return NULL;
 }
 
-void gen_bin(unsigned short *arr, size_t s, size_t occ)
+void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min)
 {
-  if (occ > max_len)
+  if (idx == size)
   {
-    return;
-  }
-  if (s == 0)
-  {
-    if (occ >= min_len)
+    if (cur >= min && cur <= max)
     {
-      char **auxPerm = (char **)malloc(sizeof(char *) * occ);
+      char **auxPerm = (char **)malloc(sizeof(char *) * cur);
       size_t pointer = 0;
       for (size_t j = 0; j < word_size; j++)
       {
@@ -184,18 +205,18 @@ void gen_bin(unsigned short *arr, size_t s, size_t occ)
           pointer++;
         }
       }
-      push_queue(all_queues[occ - 1], auxPerm, occ);
+      push_queue(all_queues[cur - min], auxPerm, cur);
     }
+    return;
   }
-  else
+  arr[idx] = 0;
+  gen_bin_perms(arr, size, idx + 1, max, cur, min);
+  if (cur < max)
   {
-    arr[s - 1] = 0;
-    gen_bin(arr, s - 1, occ++);
-    arr[s - 1] = 1;
-    gen_bin(arr, s - 1, occ);
+    arr[idx] = 1;
+    gen_bin_perms(arr, size, idx + 1, max, cur + 1, min);
   }
-  return;
-}
+};
 
 int main(int argc, char **argv)
 {
@@ -211,7 +232,7 @@ int main(int argc, char **argv)
     {
     case 'u':
     {
-      if (strncmp(optarg, "Y", 1) == 0 || strncmp(optarg, "y", 1) == 0)
+      if (optarg[0] == 'Y' || optarg[0] == 'y')
       {
         first_maiusc = true;
       }
@@ -282,13 +303,19 @@ int main(int argc, char **argv)
     }
   }
   word_size = (size_t)argc - (size_t)optind;
-  queue_n = max_len;
+  queue_n = max_len - min_len + 1;
   thread_n = (size_t)(max_len * (max_len + 1)) / 2;
   all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queue_n);
+  unsigned **C = binomialCoefficient(word_size, max_len);
   for (size_t i = 0; i < queue_n; i++)
   {
-    all_queues[i] = init_queue();
+    all_queues[i] = init_queue(C[word_size][min_len + i]);
   }
+  for (size_t i = 0; i < max_len + 1; i++)
+  {
+    free(C[i]);
+  }
+  free(C);
   char **input_words = (char **)malloc(sizeof(char *) * word_size);
   for (size_t i = 0; i < word_size; i++)
   {
@@ -296,8 +323,13 @@ int main(int argc, char **argv)
     optind++;
   }
   dict = input_words;
-  unsigned short *bin =
-      (unsigned short *)calloc(word_size, sizeof(unsigned short));
+  unsigned short *bin = (unsigned short *)calloc(word_size, sizeof(unsigned short));
+  for (size_t i = 0; i < min_len; i++)
+  {
+    bin[i] = 1;
+  }
+  gen_bin_perms(bin, word_size, 0, max_len, 0, min_len);
+  free(bin);
   pthread_t tworker[thread_n];
   size_t pos = 0;
   for (size_t i = 0; i < queue_n; i++)
@@ -309,13 +341,6 @@ int main(int argc, char **argv)
       j--;
       pos++;
     }
-  }
-  gen_bin(bin, word_size, 0);
-  free(bin);
-  for (size_t i = 0; i < queue_n; i++)
-  {
-    set_no_write(all_queues[i]);
-    broadcast_empty(all_queues[i]);
   }
   for (size_t i = 0; i < thread_n; i++)
   {
