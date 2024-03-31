@@ -311,7 +311,7 @@ int main(int argc, char **argv)
   {
     all_queues[i] = init_queue(C[word_size][min_len + i]);
   }
-  for (size_t i = 0; i < max_len + 1; i++)
+  for (size_t i = 0; i < word_size + 1; i++)
   {
     free(C[i]);
   }
