@@ -1,5 +1,5 @@
 CFLAGS = -Ofast
-CC = clang
+CC := $(shell basename $$(which $(CC)))
 TARGET = seqperm
 LINK = -lpthread
 OBJ = main.o queue.o
