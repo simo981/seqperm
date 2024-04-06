@@ -45,6 +45,14 @@ void exit_usage(char *plus)
     exit(EXIT_FAILURE);   \
   }
 
+#define LOW(NAME, VAR1, VAR2)    \
+  if (VAR1 < VAR2)           \
+  {                       \
+    perror(#NAME);        \
+    free_inputs_optind(); \
+    exit(EXIT_FAILURE);   \
+  }
+
 #define exErr(NAME) \
   perror(#NAME);    \
   exit(EXIT_FAILURE);

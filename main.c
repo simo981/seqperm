@@ -239,6 +239,12 @@ int main(int argc, char **argv)
     }
     case 'c':
     {
+      if (optind == argc)
+      { 
+        free_inputs_optind();
+        exit_usage("Words after are not provided");
+        break;
+      }
       connectors = (char **)malloc(sizeof(char *) * BUFF);
       char connector_to_copy[2] = {0x0};
       for (size_t i = 0; i < strlen(optarg); i++)
@@ -286,6 +292,7 @@ int main(int argc, char **argv)
     {
       ERR("wrong max_len parameter", max_len, atol(optarg));
       LE0("max_len can't be less than 0", max_len);
+      LOW("max_len can't be less than max_len", max_len, min_len)
       break;
     }
     case '?':
