@@ -1,6 +1,6 @@
 # Multi-Threaded word list generator (no repetition)
 ![Make](https://github.com/simo981/seqperm/actions/workflows/c-cpp.yml/badge.svg)
-![CodeQL](https://github.com/simo981/seqperm/actions/workflows/github-code-scanning/codeql/badge.svg)
+![CodeQL](https://github.com/simo981/seqperm/actions/workflows/codeql.yml/badge.svg)
 ![Valgrind](https://github.com/simo981/seqperm/actions/workflows/valgrind.yml/badge.svg)
 ## Parameters
 ```
