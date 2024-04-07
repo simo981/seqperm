@@ -18,6 +18,7 @@ static char **last = NULL;
 static size_t connectors_size = 0;
 static size_t last_size = 0;
 static const char *connector_placeholder = "|";
+static bool all_upper = false;
 static bool first_maiusc = false;
 
 unsigned **binomialCoefficient(size_t n, size_t k)
@@ -60,6 +61,7 @@ static struct option long_options[] =
     {
         {"upper", required_argument, 0, 'u'},
         {"last", required_argument, 0, 'l'},
+        {"allupper", required_argument, 0, 'a'},
         {"connectors", required_argument, 0, 'c'},
         {"start", required_argument, 0, 's'},
         {"end", required_argument, 0, 'e'},
@@ -126,7 +128,18 @@ inline void print_out(char **arr, size_t size)
   for (size_t i = 0; i < strings_len; i++)
   {
     printf("%s\n", all_strings[i]);
-    if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122)
+    if (all_upper)
+    {
+      for (size_t j = 0; j < strlen(all_strings[i]); j++)
+      {
+        if (all_strings[i][j] >= 97 && all_strings[i][j] <= 122)
+        {
+          all_strings[i][j] -= 32;
+        }
+      }
+      printf("%s\n", all_strings[i]);
+    }
+    else if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122)
     {
       all_strings[i][0] -= 32;
       printf("%s\n", all_strings[i]);
@@ -222,10 +235,18 @@ int main(int argc, char **argv)
 {
   int c, option_index = 0;
   size_t thread_n, queue_n;
-  while ((c = getopt_long(argc, argv, "l:c:s:e:u:", long_options, &option_index)) != -1)
-  { 
+  while ((c = getopt_long(argc, argv, "l:c:s:e:u:a:", long_options, &option_index)) != -1)
+  {
     switch (c)
     {
+    case 'a':
+    {
+      if (optarg[0] == 'Y' || optarg[0] == 'y')
+      {
+        all_upper = true;
+      }
+      break;
+    }
     case 'u':
     {
       if (optarg[0] == 'Y' || optarg[0] == 'y')
@@ -296,11 +317,11 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
     }
-
   }
 
-  //check if start or end are provided by the user
-  if(!min_len || !max_len){
+  // check if start or end are provided by the user
+  if (!min_len || !max_len)
+  {
     free_inputs_optind();
     exit_usage("start and end must be stated");
   }
@@ -309,8 +330,9 @@ int main(int argc, char **argv)
     LOW("max_len must be greater than min_len", max_len, min_len);
   }
 
-  //check if words are provided by the user
-  if (optind == argc){ 
+  // check if words are provided by the user
+  if (optind == argc)
+  {
     free_inputs_optind();
     exit_usage("Words after are not provided");
   }
