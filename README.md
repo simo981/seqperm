@@ -1,5 +1,6 @@
 # Multi-Threaded word list generator (no repetition)
-![example workflow](https://github.com/simo981/seqperm/actions/workflows/c-cpp.yml/badge.svg)
+![Make](https://github.com/simo981/seqperm/actions/workflows/c-cpp.yml/badge.svg)
+![CodeQL](https://github.com/simo981/seqperm/actions/workflows/github-code-scanning/codeql/badge.svg)
 ## Parameters
 ```
 --start        <mininum words to concatenate>
