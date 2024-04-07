@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request_target:
-    types: [assigned, opened, synchronize, reopened, closed, edited, ready_for_review, auto_merge_enabled]
+    types: [closed]
     branches: [ "main" ]
 
 jobs:
