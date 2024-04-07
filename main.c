@@ -331,7 +331,8 @@ int main(int argc, char **argv)
   }
   gen_bin_perms(bin, word_size, 0, max_len, 0, min_len);
   free(bin);
-  pthread_t tworker[thread_n] = {0x0};
+  pthread_t tworker[thread_n];
+  memset(&tworker, 0x0, sizeof(tworker));
   size_t pos = 0;
   for (size_t i = 0; i < queue_n; i++)
   {
