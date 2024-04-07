@@ -1,5 +1,10 @@
-CFLAGS = -Ofast
 CC := $(shell basename $$(which $(CC)))
+DEBUG ?= 0
+ifeq ($(DEBUG), 1)
+    CFLAGS = -g3
+else
+    CFLAGS = -Ofast
+endif
 TARGET = seqperm
 LINK = -lpthread
 OBJ = main.o queue.o
@@ -17,3 +22,4 @@ clean:
 re:
 	make clean
 	make -j
+

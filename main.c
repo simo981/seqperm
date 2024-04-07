@@ -22,10 +22,10 @@ static int first_maiusc = false;
 
 unsigned **binomialCoefficient(size_t n, size_t k)
 {
-  unsigned **C = (unsigned **)malloc(sizeof(unsigned *) * (n + 1));
+  unsigned **C = (unsigned **)calloc(n + 1, sizeof(unsigned *));
   for (int i = 0; i <= n; i++)
   {
-    C[i] = (unsigned *)malloc(sizeof(unsigned) * (k + 1));
+    C[i] = (unsigned *)calloc(k + 1, sizeof(unsigned));
   }
   for (int i = 0; i <= n; i++)
   {
@@ -236,6 +236,7 @@ int main(int argc, char **argv)
       {
         first_maiusc = true;
       }
+      break;
     }
     case 'c':
     {
@@ -338,6 +339,7 @@ int main(int argc, char **argv)
   gen_bin_perms(bin, word_size, 0, max_len, 0, min_len);
   free(bin);
   pthread_t tworker[thread_n];
+  memset(&tworker, 0x0, sizeof(tworker));
   size_t pos = 0;
   for (size_t i = 0; i < queue_n; i++)
   {
