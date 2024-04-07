@@ -1,10 +1,11 @@
-CFLAGS = -Ofast
+CFLAGS = 
 CC = clang
 TARGET = seqperm
 LINK = -lpthread
 OBJ = main.o queue.o
 .PHONY = clean re
 
+$(TARGET): CFLAGS += -Ofast
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) $^ $(LINK) -o $@
 
@@ -17,3 +18,6 @@ clean:
 re:
 	make clean
 	make -j
+
+debug: CFLAGS += -g3
+debug: $(TARGET)
