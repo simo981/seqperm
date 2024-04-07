@@ -23,4 +23,4 @@ jobs:
         valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --upper n --start 1 --end 5 --last 2024,001,1,355 --connectors .,- hi how are you 1>/dev/null
         valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --upper y --start 3 --end 3 --last 2024,001,1,355 --connectors .,- hi how are you 1>/dev/null
         valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --upper n --start 3 --end 3 --last 2024,001,1,355 --connectors .,- hi how are you 1>/dev/null
-        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --start 1 --end 10 hi a b c d e f g h i l 1>/dev/null
+        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --start 1 --end 10 a b c d e f g h i l 1>/dev/null
