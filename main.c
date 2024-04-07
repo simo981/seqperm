@@ -8,8 +8,8 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-static size_t max_len;
-static size_t min_len;
+static size_t max_len = 0;
+static size_t min_len = 0;
 static char **dict;
 static size_t word_size;
 static Queue_t **all_queues = NULL;
@@ -18,7 +18,10 @@ static char **last = NULL;
 static size_t connectors_size = 0;
 static size_t last_size = 0;
 static const char *connector_placeholder = "|";
-static int first_maiusc = false;
+static bool first_maiusc = false;
+static bool flagS = false;
+static bool flagE = false;
+static size_t providedArg = 0;
 
 unsigned **binomialCoefficient(size_t n, size_t k)
 {
@@ -220,14 +223,10 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
 
 int main(int argc, char **argv)
 {
-  if (argc < 5)
-  {
-    exit_usage("missing parameters");
-  }
   int c, option_index = 0;
   size_t thread_n, queue_n;
   while ((c = getopt_long(argc, argv, "l:c:s:e:u:", long_options, &option_index)) != -1)
-  {
+  { 
     switch (c)
     {
     case 'u':
@@ -279,14 +278,18 @@ int main(int argc, char **argv)
     }
     case 's':
     {
+      flagS = true;
       ERR("wrong min_len parameter", min_len, atol(optarg));
-      LE0("min_len can't be less than 0", min_len);
+      LE0("min_len can't be less than 0 or null", (int)optarg[0]- '0');
       break;
     }
     case 'e':
     {
+      flagE = true;
+      printf("%d", (int)optarg[0]- '0');
       ERR("wrong max_len parameter", max_len, atol(optarg));
-      LE0("max_len can't be less than 0", max_len);
+      LE0("max_len can't be less than 0 or null", (int)optarg[0]- '0');
+      LOW("max_len can't be less than min_len", (int)optarg[0]- '0', min_len)
       break;
     }
     case '?':
@@ -302,7 +305,19 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
     }
+
   }
+
+  //check if start or end are provided by the user
+  if(!flagS || !flagE){
+    exit_usage("start and end must be stated");
+  }
+
+  //check if words are provided by the user
+  if (optind == argc){ 
+    exit_usage("Words after are not provided");
+  }
+
   word_size = (size_t)argc - (size_t)optind;
   queue_n = max_len - min_len + 1;
   thread_n = (size_t)(max_len * (max_len + 1)) / 2;
