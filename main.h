@@ -37,6 +37,14 @@ void exit_usage(char *plus)
     exit(EXIT_FAILURE);      \
   }
 
+#define UNDEF(NAME, VAR)    \
+  if (VAR == NULL)           \
+  {                       \
+    perror(#NAME);        \
+    free_inputs_optind(); \
+    exit(EXIT_FAILURE);   \
+  }
+
 #define LE0(NAME, VAR)    \
   if (VAR <= 0)           \
   {                       \
@@ -44,6 +52,14 @@ void exit_usage(char *plus)
     free_inputs_optind(); \
     exit(EXIT_FAILURE);   \
   }
+
+#define LOW(NAME, VAR1, VAR2)    \
+  if (VAR1 < VAR2)           \
+  {                       \
+    perror(#NAME);        \
+    free_inputs_optind(); \
+    exit(EXIT_FAILURE);   \
+  }  
 
 #define exErr(NAME) \
   perror(#NAME);    \
