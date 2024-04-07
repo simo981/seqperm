@@ -21,6 +21,6 @@ We dont't want any uppercase first character.
 ## TO DO
 Implement ```--leet``` with leet option  
 Implement ```--allupper``` with full permutation in upper case  
-Implement ```--delim wo,rd``` for considering a word a possible shortener permutation, in a single permutation will be only the full word or its delim wo  
+Implement ```--delim wo,rd``` for considering a word a possible shortener permutation, in a single permutation will be only the full word or its delim wo. Multiple handling of , is a plus   
 Replace argument parsing with better handling of parameters  
 Config file ?
