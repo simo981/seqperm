@@ -19,9 +19,6 @@ static size_t connectors_size = 0;
 static size_t last_size = 0;
 static const char *connector_placeholder = "|";
 static bool first_maiusc = false;
-static bool flagS = false;
-static bool flagE = false;
-static size_t providedArg = 0;
 
 unsigned **binomialCoefficient(size_t n, size_t k)
 {
@@ -278,18 +275,12 @@ int main(int argc, char **argv)
     }
     case 's':
     {
-      flagS = true;
-      ERR("wrong min_len parameter", min_len, atol(optarg));
-      LE0("min_len can't be less than 0 or null", (int)optarg[0]- '0');
+      ERR("min_len can't be less than 0 or null", min_len, strtoul(optarg, NULL, 10));
       break;
     }
     case 'e':
     {
-      flagE = true;
-      printf("%d", (int)optarg[0]- '0');
-      ERR("wrong max_len parameter", max_len, atol(optarg));
-      LE0("max_len can't be less than 0 or null", (int)optarg[0]- '0');
-      LOW("max_len can't be less than min_len", (int)optarg[0]- '0', min_len)
+      ERR("max_len can't be less than 0 or null", max_len, strtoul(optarg, NULL, 10));
       break;
     }
     case '?':
@@ -309,12 +300,18 @@ int main(int argc, char **argv)
   }
 
   //check if start or end are provided by the user
-  if(!flagS || !flagE){
+  if(!min_len || !max_len){
+    free_inputs_optind();
     exit_usage("start and end must be stated");
+  }
+  else
+  {
+    LOW("max_len must be greater than min_len", max_len, min_len);
   }
 
   //check if words are provided by the user
   if (optind == argc){ 
+    free_inputs_optind();
     exit_usage("Words after are not provided");
   }
 
