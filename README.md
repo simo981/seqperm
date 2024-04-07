@@ -18,3 +18,9 @@ We dont't want any uppercase first character.
 ```
 ./seqperm --upper n --start 3 --end 5 --last 0,1 --connectors ,. a b c d e f g h i l m
 ```
+## TO DO
+Implement ```--leet``` with leet option  
+Implement ```--allupper``` with full permutation in upper case  
+Implement ```--delim wo,rd``` for considering a word a possible shortener permutation, in a single permutation will be only the full word or its delim wo  
+Replace argument parsing with better handling of parameters  
+Config file ?
