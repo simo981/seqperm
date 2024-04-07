@@ -236,6 +236,7 @@ int main(int argc, char **argv)
       {
         first_maiusc = true;
       }
+      break;
     }
     case 'c':
     {
