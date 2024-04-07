@@ -4,7 +4,7 @@ ifeq ($(DEBUG), 1)
 else
     CFLAGS = -Ofast
 endif
-CC = gcc
+CC := $(shell basename $$(which $(CC)))
 TARGET = seqperm
 LINK = -lpthread
 OBJ = main.o queue.o
