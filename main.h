@@ -20,7 +20,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
 size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len);
 void free_inputs_optind(void);
 void exit_usage(char *plus);
-void leet_encode(char *str);
+unsigned leet_encode(char *str);
 
 void exit_usage(char *plus)
 {

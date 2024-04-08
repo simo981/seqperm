@@ -112,6 +112,7 @@ inline void print_out(char **arr, size_t size)
       }
     }
   }
+
   if (last)
   {
     size_t saved_len = strings_len;
@@ -136,34 +137,24 @@ inline void print_out(char **arr, size_t size)
   if(merged){
     for (size_t i = 0; i < strings_len; i++)
     {
-      if (all_upper)
-      {
+      if (all_upper){
         for (size_t j = 0; j < strlen(all_strings[i]); j++)
         {
           if (all_strings[i][j] >= 97 && all_strings[i][j] <= 122)
           {
             all_strings[i][j] -= 32;
           }
-          if (use_leet) {
-            // Encode each string using Leet encoding
-            leet_encode(all_strings[i]);
-          }
         }
-        printf("%s\n", all_strings[i]);
       }
       else if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122){
         all_strings[i][0] -= 32;
-        if (use_leet) {
-          // Encode each string using Leet encoding
-          leet_encode(all_strings[i]);
-        }
-        printf("%s\n", all_strings[i]);
       }
+
       if (use_leet) {
-        // Encode each string using Leet encoding
+        // Encode each string using Leet
         leet_encode(all_strings[i]);
-        printf("%s\n", all_strings[i]);
       }
+      printf("%s\n", all_strings[i]);
       free(all_strings[i]);
     }
   }
@@ -179,26 +170,18 @@ inline void print_out(char **arr, size_t size)
           {
             all_strings[i][j] -= 32;
           }
-          if (use_leet) {
-            // Encode each string using Leet encoding
-            leet_encode(all_strings[i]);
-          }
         }
         printf("%s\n", all_strings[i]);
       }
       else if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122){
         all_strings[i][0] -= 32;
         printf("%s\n", all_strings[i]);
-        if (use_leet) {
-          // Encode each string using Leet encoding
-          leet_encode(all_strings[i]);
-          printf("%s\n", all_strings[i]);
-        }
       }
       if (use_leet) {
-        // Encode each string using Leet encoding
-        leet_encode(all_strings[i]);
-        printf("%s\n", all_strings[i]);
+        // Encode each string using Leet
+        if(leet_encode(all_strings[i])){
+          printf("%s\n", all_strings[i]);
+        }
       }
       free(all_strings[i]);
     }
@@ -289,29 +272,25 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
   }
 };
 
-void leet_encode(char *str) {
+unsigned leet_encode(char *str) {
   for (char *l = str; *l; l++) {
+    switch (*l) {
+      case 'a': case 'A': *l = '4'; return 1;
+      case 'e': case 'E': *l = '3'; return 1;
+      case 'i': case 'I': *l = '1'; return 1;
+      case 'o': case 'O': *l = '0'; return 1;
+    }    
     if(leet_full){
       switch (*l) {
-          case 'a': case 'A': *l = '4'; break;
-          case 'e': case 'E': *l = '3'; break;
-          case 'i': case 'I': *l = '1'; break;
-          case 'o': case 'O': *l = '0'; break;
-          case 's': case 'S': *l = '5'; break;
-          case 't': case 'T': *l = '7'; break;
-          case 'g': case 'G': *l = '9'; break;
-          case 'z': case 'Z': *l = '2'; break;
+          case 's': case 'S': *l = '5'; return 1;
+          case 't': case 'T': *l = '7'; return 1;
+          case 'g': case 'G': *l = '9'; return 1;
+          case 'z': case 'Z': *l = '2'; return 1;
       }
     }
-    else{
-      switch (*l) {
-        case 'a': case 'A': *l = '4'; break;
-        case 'e': case 'E': *l = '3'; break;
-        case 'i': case 'I': *l = '1'; break;
-        case 'o': case 'O': *l = '0'; break;
-      }    
-    }
   }
+
+  return 0;
 }
 
 int main(int argc, char **argv)
