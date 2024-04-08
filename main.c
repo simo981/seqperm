@@ -20,6 +20,10 @@ static size_t last_size = 0;
 static const char *connector_placeholder = "|";
 static bool all_upper = false;
 static bool first_maiusc = false;
+static bool use_leet = false;
+static bool leet_full = false;
+static bool leet_vowel = false;
+static bool merged = false;
 
 unsigned **binomialCoefficient(size_t n, size_t k)
 {
@@ -62,6 +66,8 @@ static struct option long_options[] =
         {"upper", required_argument, 0, 'u'},
         {"last", required_argument, 0, 'l'},
         {"allupper", required_argument, 0, 'a'},
+        {"leet", required_argument, 0, 't'},
+        {"merged", required_argument, 0, 'm'},
         {"connectors", required_argument, 0, 'c'},
         {"start", required_argument, 0, 's'},
         {"end", required_argument, 0, 'e'},
@@ -125,27 +131,79 @@ inline void print_out(char **arr, size_t size)
       }
     }
   }
-  for (size_t i = 0; i < strings_len; i++)
-  {
-    printf("%s\n", all_strings[i]);
-    if (all_upper)
+
+  // if the user want to merge all the words transformations rather than print all steps
+  if(merged){
+    for (size_t i = 0; i < strings_len; i++)
     {
-      for (size_t j = 0; j < strlen(all_strings[i]); j++)
+      if (all_upper)
       {
-        if (all_strings[i][j] >= 97 && all_strings[i][j] <= 122)
+        for (size_t j = 0; j < strlen(all_strings[i]); j++)
         {
-          all_strings[i][j] -= 32;
+          if (all_strings[i][j] >= 97 && all_strings[i][j] <= 122)
+          {
+            all_strings[i][j] -= 32;
+          }
+          if (use_leet) {
+            // Encode each string using Leet encoding
+            leet_encode(all_strings[i]);
+          }
+        }
+        printf("%s\n", all_strings[i]);
+      }
+      else if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122){
+        all_strings[i][0] -= 32;
+        if (use_leet) {
+          // Encode each string using Leet encoding
+          leet_encode(all_strings[i]);
+        }
+        printf("%s\n", all_strings[i]);
+      }
+      if (use_leet) {
+        // Encode each string using Leet encoding
+        leet_encode(all_strings[i]);
+        printf("%s\n", all_strings[i]);
+      }
+      free(all_strings[i]);
+    }
+  }
+  else{
+    for (size_t i = 0; i < strings_len; i++)
+    {
+      printf("%s\n", all_strings[i]);
+      if (all_upper)
+      {
+        for (size_t j = 0; j < strlen(all_strings[i]); j++)
+        {
+          if (all_strings[i][j] >= 97 && all_strings[i][j] <= 122)
+          {
+            all_strings[i][j] -= 32;
+          }
+          if (use_leet) {
+            // Encode each string using Leet encoding
+            leet_encode(all_strings[i]);
+          }
+        }
+        printf("%s\n", all_strings[i]);
+      }
+      else if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122){
+        all_strings[i][0] -= 32;
+        printf("%s\n", all_strings[i]);
+        if (use_leet) {
+          // Encode each string using Leet encoding
+          leet_encode(all_strings[i]);
+          printf("%s\n", all_strings[i]);
         }
       }
-      printf("%s\n", all_strings[i]);
+      if (use_leet) {
+        // Encode each string using Leet encoding
+        leet_encode(all_strings[i]);
+        printf("%s\n", all_strings[i]);
+      }
+      free(all_strings[i]);
     }
-    else if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122)
-    {
-      all_strings[i][0] -= 32;
-      printf("%s\n", all_strings[i]);
-    }
-    free(all_strings[i]);
   }
+
 }
 
 inline void swap_p(char **f, char **s)
@@ -231,6 +289,31 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
   }
 };
 
+void leet_encode(char *str) {
+  for (char *l = str; *l; l++) {
+    if(leet_full){
+      switch (*l) {
+          case 'a': case 'A': *l = '4'; break;
+          case 'e': case 'E': *l = '3'; break;
+          case 'i': case 'I': *l = '1'; break;
+          case 'o': case 'O': *l = '0'; break;
+          case 's': case 'S': *l = '5'; break;
+          case 't': case 'T': *l = '7'; break;
+          case 'g': case 'G': *l = '9'; break;
+          case 'z': case 'Z': *l = '2'; break;
+      }
+    }
+    else{
+      switch (*l) {
+        case 'a': case 'A': *l = '4'; break;
+        case 'e': case 'E': *l = '3'; break;
+        case 'i': case 'I': *l = '1'; break;
+        case 'o': case 'O': *l = '0'; break;
+      }    
+    }
+  }
+}
+
 int main(int argc, char **argv)
 {
   int c, option_index = 0;
@@ -255,6 +338,30 @@ int main(int argc, char **argv)
       }
       break;
     }
+    case 't':
+    {
+      if (strcmp(optarg, "vowel") == 0){
+        use_leet = true;
+        leet_vowel = true;
+      }
+      else if(strcmp(optarg, "full") == 0){
+        use_leet = true;
+        leet_full = true;    
+      }
+      else{
+        free_inputs_optind();
+        exit_usage("wrong parameters");
+      }
+      break;
+    }    
+    case 'm':
+    {
+      if (optarg[0] == 'Y' || optarg[0] == 'y')
+      {
+        merged = true;
+      }
+      break;
+    }         
     case 'c':
     {
       connectors = (char **)malloc(sizeof(char *) * BUFF);
