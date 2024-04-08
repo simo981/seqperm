@@ -22,7 +22,7 @@ static bool all_maiusc = false;
 static bool first_maiusc = false;
 static bool leet_full = false;
 static bool leet_vowel = false;
-static bool merged = false;
+static bool only_transformation = false;
 
 unsigned **binomialCoefficient(size_t n, size_t k)
 {
@@ -65,7 +65,7 @@ static struct option long_options[] =
         {"upper", required_argument, 0, 'u'},
         {"last", required_argument, 0, 'l'},
         {"leet", required_argument, 0, 't'},
-        {"merged", required_argument, 0, 'm'},
+        {"onlytransformation", required_argument, 0, 'm'},
         {"connectors", required_argument, 0, 'c'},
         {"start", required_argument, 0, 's'},
         {"end", required_argument, 0, 'e'},
@@ -132,7 +132,7 @@ inline void print_out(char **arr, size_t size)
   }
 
   // if the user want to merge all the words transformations rather than print all steps
-  if(merged){
+  if(only_transformation){
     for (size_t i = 0; i < strings_len; i++)
     {
       if (all_maiusc){
@@ -328,7 +328,7 @@ int main(int argc, char **argv)
     {
       if (optarg[0] == 'Y' || optarg[0] == 'y')
       {
-        merged = true;
+        only_transformation = true;
       }
       break;
     }         
