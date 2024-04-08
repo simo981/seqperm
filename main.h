@@ -24,7 +24,7 @@ unsigned leet_encode(char *str);
 
 void exit_usage(char *plus)
 {
-  printf("%s\n./seqperm --upper (y/n) --allupper (y/n) --merged (y/n) --leet (full/vowel) --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
+  printf("%s\n./seqperm --merged (y/n) --upper (first/all) --leet (vowel/full) --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
   exit(EXIT_FAILURE);
 }
 

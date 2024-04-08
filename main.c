@@ -18,9 +18,8 @@ static char **last = NULL;
 static size_t connectors_size = 0;
 static size_t last_size = 0;
 static const char *connector_placeholder = "|";
-static bool all_upper = false;
+static bool all_maiusc = false;
 static bool first_maiusc = false;
-static bool use_leet = false;
 static bool leet_full = false;
 static bool leet_vowel = false;
 static bool merged = false;
@@ -65,7 +64,6 @@ static struct option long_options[] =
     {
         {"upper", required_argument, 0, 'u'},
         {"last", required_argument, 0, 'l'},
-        {"allupper", required_argument, 0, 'a'},
         {"leet", required_argument, 0, 't'},
         {"merged", required_argument, 0, 'm'},
         {"connectors", required_argument, 0, 'c'},
@@ -137,7 +135,7 @@ inline void print_out(char **arr, size_t size)
   if(merged){
     for (size_t i = 0; i < strings_len; i++)
     {
-      if (all_upper){
+      if (all_maiusc){
         for (size_t j = 0; j < strlen(all_strings[i]); j++)
         {
           if (all_strings[i][j] >= 97 && all_strings[i][j] <= 122)
@@ -150,7 +148,7 @@ inline void print_out(char **arr, size_t size)
         all_strings[i][0] -= 32;
       }
 
-      if (use_leet) {
+      if (leet_full || leet_vowel) {
         // Encode each string using Leet
         leet_encode(all_strings[i]);
       }
@@ -162,7 +160,7 @@ inline void print_out(char **arr, size_t size)
     for (size_t i = 0; i < strings_len; i++)
     {
       printf("%s\n", all_strings[i]);
-      if (all_upper)
+      if (all_maiusc)
       {
         for (size_t j = 0; j < strlen(all_strings[i]); j++)
         {
@@ -177,7 +175,7 @@ inline void print_out(char **arr, size_t size)
         all_strings[i][0] -= 32;
         printf("%s\n", all_strings[i]);
       }
-      if (use_leet) {
+      if (leet_full || leet_vowel) {
         // Encode each string using Leet
         if(leet_encode(all_strings[i])){
           printf("%s\n", all_strings[i]);
@@ -297,34 +295,27 @@ int main(int argc, char **argv)
 {
   int c, option_index = 0;
   size_t thread_n, queue_n;
-  while ((c = getopt_long(argc, argv, "l:c:s:e:u:a:", long_options, &option_index)) != -1)
+  while ((c = getopt_long(argc, argv, "l:c:s:e:u:t:", long_options, &option_index)) != -1)
   {
     switch (c)
     {
-    case 'a':
-    {
-      if (optarg[0] == 'Y' || optarg[0] == 'y')
-      {
-        all_upper = true;
-      }
-      break;
-    }
     case 'u':
     {
-      if (optarg[0] == 'Y' || optarg[0] == 'y')
+      if (strcmp(optarg, "first") == 0)
       {
         first_maiusc = true;
+      }
+      else if(strcmp(optarg, "all") == 0){
+        all_maiusc = true;    
       }
       break;
     }
     case 't':
     {
       if (strcmp(optarg, "vowel") == 0){
-        use_leet = true;
         leet_vowel = true;
       }
       else if(strcmp(optarg, "full") == 0){
-        use_leet = true;
         leet_full = true;    
       }
       else{
