@@ -19,7 +19,7 @@ size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_le
 void free_inputs_optind(void);
 void exit_usage(char *plus);
 bool leet_encode(char *str);
-void upper_encode(char *str);
+bool upper_encode(char *str);
 
 void exit_usage(char *plus)
 {

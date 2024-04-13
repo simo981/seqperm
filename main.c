@@ -14,6 +14,7 @@ static char **dict;
 static size_t word_size;
 static Queue_t **all_queues = NULL;
 static char **connectors = NULL;
+static char leet_map[128] = {0x0};
 static char **last = NULL;
 static size_t connectors_size = 0;
 static size_t last_size = 0;
@@ -153,8 +154,10 @@ inline void print_out(char **arr, size_t size)
       size_t copy_len = strlen(my_str);
       char copy[BUFF] = {0x0};
       memccpy(copy, my_str, '\0', copy_len);
-      upper_encode(copy);
-      strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      if (upper_encode(copy))
+      {
+        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      }
     }
   }
   saved_len = only_transform ? saved_len : 0;
@@ -173,62 +176,19 @@ inline bool leet_encode(char *str)
   bool encoded = false;
   while (*str != '\0')
   {
-    switch (*str)
+    if (leet_map[*str])
     {
-    case 'a':
-    case 'A':
-      *str = '4';
+      *str = leet_map[*str];
       encoded = true;
-      break;
-    case 'e':
-    case 'E':
-      *str = '3';
-      encoded = true;
-      break;
-    case 'i':
-    case 'I':
-      *str = '1';
-      encoded = true;
-      break;
-    case 'o':
-    case 'O':
-      *str = '0';
-      encoded = true;
-      break;
-    }
-    if (leet_full)
-    {
-      switch (*str)
-      {
-      case 's':
-      case 'S':
-        *str = '5';
-        encoded = true;
-        break;
-      case 't':
-      case 'T':
-        *str = '7';
-        encoded = true;
-        break;
-      case 'g':
-      case 'G':
-        *str = '9';
-        encoded = true;
-        break;
-      case 'z':
-      case 'Z':
-        *str = '2';
-        encoded = true;
-        break;
-      }
     }
     str++;
   }
   return encoded;
 }
 
-inline void upper_encode(char *str)
+inline bool upper_encode(char *str)
 {
+  bool encoded = false;
   if (upper_full)
   {
     for (size_t j = 0; j < strlen(str); j++)
@@ -236,13 +196,16 @@ inline void upper_encode(char *str)
       if (str[j] >= 97 && str[j] <= 122)
       {
         str[j] -= 32;
+        encoded = true;
       }
     }
   }
   else if (upper_first && str[0] >= 97 && str[0] <= 122)
   {
     str[0] -= 32;
+    encoded = true;
   }
+  return encoded;
 }
 
 inline void swap_p(char **f, char **s)
@@ -448,6 +411,18 @@ int main(int argc, char **argv)
   {
     free_inputs_optind();
     exit_usage("Words after are not provided");
+  }
+
+  leet_map['a'] = '4';
+  leet_map['e'] = '3';
+  leet_map['i'] = '1';
+  leet_map['o'] = '0';
+  if (leet_full)
+  {
+    leet_map['s'] = '5';
+    leet_map['t'] = '7';
+    leet_map['g'] = '9';
+    leet_map['z'] = '2';
   }
 
   word_size = (size_t)argc - (size_t)optind;
