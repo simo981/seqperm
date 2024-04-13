@@ -20,11 +20,12 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
 size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len);
 void free_inputs_optind(void);
 void exit_usage(char *plus);
-unsigned leet_encode(char *str);
+void leet_encode(char *str);
+void upper_encode(char *str);
 
 void exit_usage(char *plus)
 {
-  printf("%s\n./seqperm --merged (y/n) --upper (first/all) --leet (vowel/full) --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
+  printf("%s\n./seqperm --upper full/first --leet full/vowel --only_transformations y/n --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
   exit(EXIT_FAILURE);
 }
 
@@ -38,8 +39,8 @@ void exit_usage(char *plus)
     exit(EXIT_FAILURE);      \
   }
 
-#define UNDEF(NAME, VAR)    \
-  if (VAR == NULL)           \
+#define UNDEF(NAME, VAR)  \
+  if (VAR == NULL)        \
   {                       \
     perror(#NAME);        \
     free_inputs_optind(); \
@@ -54,13 +55,13 @@ void exit_usage(char *plus)
     exit(EXIT_FAILURE);   \
   }
 
-#define LOW(NAME, VAR1, VAR2)    \
-  if (VAR1 < VAR2)           \
-  {                       \
-    perror(#NAME);        \
-    free_inputs_optind(); \
-    exit(EXIT_FAILURE);   \
-  }  
+#define LOW(NAME, VAR1, VAR2) \
+  if (VAR1 < VAR2)            \
+  {                           \
+    perror(#NAME);            \
+    free_inputs_optind();     \
+    exit(EXIT_FAILURE);       \
+  }
 
 #define exErr(NAME) \
   perror(#NAME);    \
