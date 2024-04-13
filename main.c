@@ -139,8 +139,10 @@ inline void print_out(char **arr, size_t size)
       size_t copy_len = strlen(my_str);
       char copy[BUFF] = {0x0};
       memccpy(copy, my_str, '\0', copy_len);
-      leet_encode(copy);
-      strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      if (leet_encode(copy))
+      {
+        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      }
     }
   }
   if (upper_first || upper_full)
@@ -157,15 +159,19 @@ inline void print_out(char **arr, size_t size)
     }
   }
   saved_len = only_transform ? saved_len : 0;
-  for (size_t i = saved_len; i < strings_len; i++)
+  for (size_t i = 0; i < strings_len; i++)
   {
-    printf("%s\n", all_strings[i]);
+    if (i >= saved_len)
+    {
+      printf("%s\n", all_strings[i]);
+    }
     free(all_strings[i]);
   }
 }
 
-inline void leet_encode(char *str)
+inline bool leet_encode(char *str)
 {
+  bool encoded = false;
   while (*str != '\0')
   {
     switch (*str)
@@ -173,18 +179,22 @@ inline void leet_encode(char *str)
     case 'a':
     case 'A':
       *str = '4';
+      encoded = true;
       break;
     case 'e':
     case 'E':
       *str = '3';
+      encoded = true;
       break;
     case 'i':
     case 'I':
       *str = '1';
+      encoded = true;
       break;
     case 'o':
     case 'O':
       *str = '0';
+      encoded = true;
       break;
     }
     if (leet_full)
@@ -194,23 +204,28 @@ inline void leet_encode(char *str)
       case 's':
       case 'S':
         *str = '5';
+        encoded = true;
         break;
       case 't':
       case 'T':
         *str = '7';
+        encoded = true;
         break;
       case 'g':
       case 'G':
         *str = '9';
+        encoded = true;
         break;
       case 'z':
       case 'Z':
         *str = '2';
+        encoded = true;
         break;
       }
     }
     str++;
   }
+  return encoded;
 }
 
 inline void upper_encode(char *str)

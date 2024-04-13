@@ -4,10 +4,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #define BUFF 512
 
 void print_out(char **arr, size_t size);
@@ -20,7 +18,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
 size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len);
 void free_inputs_optind(void);
 void exit_usage(char *plus);
-void leet_encode(char *str);
+bool leet_encode(char *str);
 void upper_encode(char *str);
 
 void exit_usage(char *plus)
