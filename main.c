@@ -73,8 +73,9 @@ static struct option long_options[] =
 
 inline size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len)
 {
-  char *raw_copy = (char *)malloc(sizeof(char) * to_push_len);
+  char *raw_copy = (char *)malloc(sizeof(char) * (to_push_len + 1));
   memccpy(raw_copy, to_push, '\0', to_push_len);
+  raw_copy[to_push_len] = '\0';
   buff[idx] = raw_copy;
   return idx + 1;
 };
@@ -92,8 +93,7 @@ inline void print_out(char **arr, size_t size)
     memccpy(finalString + run_len, arr[i], '\0', lengths[i]);
     run_len += lengths[i];
   }
-  finalString[run_len] = '\0';
-  strings_len = add_string(all_strings, strings_len, finalString, run_len + 1);
+  strings_len = add_string(all_strings, strings_len, finalString, run_len);
   if (connectors && size >= 2)
   {
     char connectorString[BUFF] = {0x0};
@@ -107,7 +107,7 @@ inline void print_out(char **arr, size_t size)
       for (size_t y = 0; y < connectors_size; y++)
       {
         connectorString[cumulative_len] = connectors[y][0];
-        strings_len = add_string(all_strings, strings_len, connectorString, run_len + 2);
+        strings_len = add_string(all_strings, strings_len, connectorString, run_len + 1);
       }
     }
   }
@@ -125,8 +125,7 @@ inline void print_out(char **arr, size_t size)
       {
         size_of_number = strlen(last[j]);
         memccpy(copy + copy_len, last[j], '\0', size_of_number);
-        copy[copy_len + size_of_number] = '\0';
-        strings_len = add_string(all_strings, strings_len, copy, copy_len + size_of_number + 1);
+        strings_len = add_string(all_strings, strings_len, copy, copy_len + size_of_number);
       }
     }
   }
