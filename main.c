@@ -88,6 +88,7 @@ inline void print_out(char **arr, size_t size)
   size_t run_len = 0, strings_len = 0;
   size_t lengths[size];
   size_t saved_len = 0;
+
   for (size_t i = 0; i < size; i++)
   {
     lengths[i] = strlen(arr[i]);
@@ -95,6 +96,7 @@ inline void print_out(char **arr, size_t size)
     run_len += lengths[i];
   }
   strings_len = add_string(all_strings, strings_len, finalString, run_len);
+
   if (connectors && size >= 2)
   {
     char connectorString[BUFF] = {0x0};
@@ -112,6 +114,7 @@ inline void print_out(char **arr, size_t size)
       }
     }
   }
+
   if (last)
   {
     saved_len = strings_len;
@@ -130,7 +133,22 @@ inline void print_out(char **arr, size_t size)
       }
     }
   }
-  if (leet_full || leet_vowel)
+
+  if (only_transform)
+  {
+    saved_len = strings_len;
+    for (size_t i = 0; i < saved_len; i++)
+    {
+        const char *my_str = all_strings[i];
+        size_t copy_len = strlen(my_str);
+        char copy[BUFF] = {0x0};
+        memccpy(copy, my_str, '\0', copy_len);
+        bool u = upper_encode(copy);
+        bool l = leet_encode(copy);
+        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+    }
+  }
+  else
   {
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
@@ -144,9 +162,7 @@ inline void print_out(char **arr, size_t size)
         strings_len = add_string(all_strings, strings_len, copy, copy_len);
       }
     }
-  }
-  if (upper_first || upper_full)
-  {
+
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
@@ -160,28 +176,31 @@ inline void print_out(char **arr, size_t size)
       }
     }
   }
+
   saved_len = only_transform ? saved_len : 0;
   for (size_t i = 0; i < strings_len; i++)
   {
-    if (i >= saved_len)
-    {
-      printf("%s\n", all_strings[i]);
-    }
-    free(all_strings[i]);
+      if (i >= saved_len)
+      {
+          printf("%s\n", all_strings[i]);
+      }
+      free(all_strings[i]);
   }
 }
 
 inline bool leet_encode(char *str)
 {
   bool encoded = false;
-  while (*str != '\0')
-  {
-    if (leet_map[*str])
+  if(leet_vowel || leet_full)
+  {  while (*str != '\0')
     {
-      *str = leet_map[*str];
-      encoded = true;
+      if (leet_map[*str])
+      {
+        *str = leet_map[*str];
+        encoded = true;
+      }
+      str++;
     }
-    str++;
   }
   return encoded;
 }
@@ -309,6 +328,7 @@ int main(int argc, char **argv)
       {
         leet_vowel = true;
       }
+
       break;
     }
     case 'u':
@@ -321,6 +341,7 @@ int main(int argc, char **argv)
       {
         upper_first = true;
       }
+
       break;
     }
     case 'p':
@@ -329,6 +350,16 @@ int main(int argc, char **argv)
       {
         only_transform = true;
       }
+      else if (optarg[0] == 'N' || optarg[0] == 'n')
+      {
+        only_transform = false;
+      }
+      else{
+        free_inputs_optind();
+        exit_usage("wrong parameters");
+        break;
+      }
+
       break;
     }
     case 'c':
@@ -344,32 +375,22 @@ int main(int argc, char **argv)
       connectors_size = strlen(optarg);
       break;
     }
-    case 'l':
+  case 'l':
+  {
+    last = (char **)malloc(sizeof(char *) * BUFF);
+    char *token = strtok(optarg, ",");
+    size_t x = 0;
+    while (token != NULL)
     {
-      last = (char **)malloc(sizeof(char *) * BUFF);
-      char connector_to_copy[BUFF] = {0x0};
-      size_t j = 0, x = 0;
-      for (size_t i = 0; i < strlen(optarg); i++)
-      {
-        if (optarg[i] == ',' || (i + 1) == strlen(optarg))
-        {
-          if (j == 0)
-          {
-            connector_to_copy[j++] = optarg[i];
-          }
-          last[x] = (char *)malloc(sizeof(char) * ++j);
-          memccpy(last[x++], connector_to_copy, '\0', j);
-          memset(connector_to_copy, '\0', BUFF);
-          j = 0;
-        }
-        else
-        {
-          connector_to_copy[j++] = optarg[i];
-        }
-      }
-      last_size = x;
-      break;
+      last[x] = (char *)malloc(sizeof(char) * (strlen(token) + 1));
+      strcpy(last[x], token);
+      token = strtok(NULL, ",");
+      x++;
     }
+    last_size = x;
+    break;
+  }
+
     case 's':
     {
       ERR("min_len can't be less than 0 or null", min_len, strtoul(optarg, NULL, 10));
@@ -413,16 +434,30 @@ int main(int argc, char **argv)
     exit_usage("Words after are not provided");
   }
 
+  if(only_transform && !leet_vowel && !leet_full && !upper_first && !upper_full)
+  {
+      free_inputs_optind();
+      exit_usage("--only_transformations require at least one transformation");
+  }
+
   leet_map['a'] = '4';
+  leet_map['A'] = '4';
   leet_map['e'] = '3';
+  leet_map['E'] = '3';
   leet_map['i'] = '1';
+  leet_map['I'] = '1';
   leet_map['o'] = '0';
+  leet_map['O'] = '0';
   if (leet_full)
   {
     leet_map['s'] = '5';
+    leet_map['S'] = '5';
     leet_map['t'] = '7';
+    leet_map['T'] = '7';
     leet_map['g'] = '9';
+    leet_map['G'] = '9';
     leet_map['z'] = '2';
+    leet_map['Z'] = '2';
   }
 
   word_size = (size_t)argc - (size_t)optind;
