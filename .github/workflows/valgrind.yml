@@ -21,8 +21,6 @@ jobs:
     - name: valgrind check
       run: |
         make DEBUG=1
-        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --upper y --start 1 --end 5 --last 2024,001,1,355 --connectors .,- hi how are you fine 1>/dev/null
-        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --upper n --start 1 --end 5 --last 2024,001,1,355 --connectors .,- hi how are you fine 1>/dev/null
-        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --upper y --start 3 --end 3 --last 2024,001,1,355 --connectors .,- hi how are you fine 1>/dev/null
-        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --upper n --start 3 --end 3 --last 2024,001,1,355 --connectors .,- hi how are you fine 1>/dev/null
+        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --reverse full --upper full --leet full --start 1 --end 5 --only_transformations n --last 2024,001,1,355 --connectors .,- hi how are you fine 1>/dev/null
+        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --reverse full --upper full --leet full --start 1 --end 5 --only_transformations y --last 2024,001,1,355 --connectors .,- hi how are you fine 1>/dev/null
         valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --start 1 --end 10 a b c d e f g h i l 1>/dev/null

@@ -14,23 +14,29 @@ static char **dict;
 static size_t word_size;
 static Queue_t **all_queues = NULL;
 static char **connectors = NULL;
+static char leet_map[128] = {0x0};
 static char **last = NULL;
 static size_t connectors_size = 0;
 static size_t last_size = 0;
 static const char *connector_placeholder = "|";
-static bool all_upper = false;
-static bool first_maiusc = false;
+static bool leet_vowel = false;
+static bool leet_full = false;
+static bool upper_first = false;
+static bool upper_full = false;
+static bool only_transform = false;
+static bool reverse_words = false;
+static bool reverse_full = false;
 
 unsigned **binomialCoefficient(size_t n, size_t k)
 {
   unsigned **C = (unsigned **)calloc(n + 1, sizeof(unsigned *));
-  for (int i = 0; i <= n; i++)
+  for (size_t i = 0; i <= n; i++)
   {
     C[i] = (unsigned *)calloc(k + 1, sizeof(unsigned));
   }
-  for (int i = 0; i <= n; i++)
+  for (size_t i = 0; i <= n; i++)
   {
-    for (int j = 0; j <= k && j <= i; j++)
+    for (size_t j = 0; j <= k && j <= i; j++)
     {
       if (j == 0 || j == i)
       {
@@ -61,7 +67,9 @@ static struct option long_options[] =
     {
         {"upper", required_argument, 0, 'u'},
         {"last", required_argument, 0, 'l'},
-        {"allupper", required_argument, 0, 'a'},
+        {"only_transformations", required_argument, 0, 'p'},
+        {"reverse", required_argument, 0, 'r'},
+        {"leet", required_argument, 0, 'k'},
         {"connectors", required_argument, 0, 'c'},
         {"start", required_argument, 0, 's'},
         {"end", required_argument, 0, 'e'},
@@ -69,11 +77,44 @@ static struct option long_options[] =
 
 inline size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len)
 {
-  char *raw_copy = (char *)malloc(sizeof(char) * to_push_len);
+  char *raw_copy = (char *)malloc(sizeof(char) * (to_push_len + 1));
   memccpy(raw_copy, to_push, '\0', to_push_len);
+  raw_copy[to_push_len] = '\0';
   buff[idx] = raw_copy;
   return idx + 1;
 };
+
+inline bool palindrome(char *str, size_t len)
+{
+  char *p1 = str;
+  char *p2 = str + len - 1;
+  char *mid = str + (size_t)len / 2;
+  while (p1 != mid && p2 != mid)
+  {
+    if (*p1++ != *p2--)
+    {
+      return false;
+    }
+  }
+  if (p1 == mid && p2 == mid)
+  {
+    return true;
+  }
+  return false;
+}
+
+inline void reverse(char *str, size_t len)
+{
+  char *p1 = str;
+  char *p2 = str + len - 1;
+
+  while (p1 < p2)
+  {
+    char tmp = *p1;
+    *p1++ = *p2;
+    *p2-- = tmp;
+  }
+}
 
 inline void print_out(char **arr, size_t size)
 {
@@ -81,15 +122,48 @@ inline void print_out(char **arr, size_t size)
   char *all_strings[BUFF] = {0x0};
   size_t run_len = 0, strings_len = 0;
   size_t lengths[size];
+  size_t saved_len = 0;
+  size_t reverse_make_sense = false;
   for (size_t i = 0; i < size; i++)
   {
     lengths[i] = strlen(arr[i]);
     memccpy(finalString + run_len, arr[i], '\0', lengths[i]);
     run_len += lengths[i];
   }
-  finalString[run_len] = '\0';
-  strings_len = add_string(all_strings, strings_len, finalString, run_len + 1);
-  if (connectors)
+  strings_len = add_string(all_strings, strings_len, finalString, run_len);
+  if (reverse_words || reverse_full)
+  {
+    size_t one = 0, palindrome_count = 0;
+    for (size_t i = 0; i < size; i++)
+    {
+      if (lengths[i] == 1)
+      {
+        one++;
+      }
+      else if (palindrome(arr[i], lengths[i]))
+      {
+        palindrome_count++;
+      }
+    }
+    if (one != size && palindrome_count != size)
+    {
+      reverse_make_sense = true;
+    }
+    if (reverse_make_sense && reverse_words)
+    {
+      saved_len = strings_len;
+      for (size_t i = 0; i < saved_len; i++)
+      {
+        const char *my_str = all_strings[i];
+        size_t copy_len = strlen(my_str);
+        char copy[BUFF] = {0x0};
+        memccpy(copy, my_str, '\0', copy_len);
+        reverse(copy, copy_len);
+        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      }
+    }
+  }
+  if (connectors && size >= 2)
   {
     char connectorString[BUFF] = {0x0};
     size_t cumulative_len = 0;
@@ -97,55 +171,122 @@ inline void print_out(char **arr, size_t size)
     {
       cumulative_len += lengths[i];
       memccpy(connectorString, finalString, '\0', cumulative_len);
-      memccpy(connectorString + cumulative_len, connector_placeholder, '\0', 1);
+      connectorString[cumulative_len] = connector_placeholder[0];
       memccpy(connectorString + cumulative_len + 1, finalString + cumulative_len, '\0', run_len - cumulative_len + 1);
       for (size_t y = 0; y < connectors_size; y++)
       {
-        memccpy(connectorString + cumulative_len, connectors[y], '\0', 1);
-        strings_len = add_string(all_strings, strings_len, connectorString, run_len + 2);
+        connectorString[cumulative_len] = connectors[y][0];
+        strings_len = add_string(all_strings, strings_len, connectorString, run_len + 1);
       }
     }
   }
   if (last)
   {
-    size_t saved_len = strings_len;
+    saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
       size_t size_of_number;
       const char *my_str = all_strings[i];
-      char copy[BUFF] = {0x0};
-      memccpy(copy, my_str, '\0', strlen(my_str));
       size_t copy_len = strlen(my_str);
+      char copy[BUFF] = {0x0};
+      memccpy(copy, my_str, '\0', copy_len);
       for (size_t j = 0; j < last_size; j++)
       {
         size_of_number = strlen(last[j]);
         memccpy(copy + copy_len, last[j], '\0', size_of_number);
-        copy[copy_len + size_of_number] = '\0';
-        strings_len = add_string(all_strings, strings_len, copy, copy_len + size_of_number + 1);
+        strings_len = add_string(all_strings, strings_len, copy, copy_len + size_of_number);
       }
     }
   }
+  if (leet_full || leet_vowel)
+  {
+    saved_len = strings_len;
+    for (size_t i = 0; i < saved_len; i++)
+    {
+      const char *my_str = all_strings[i];
+      size_t copy_len = strlen(my_str);
+      char copy[BUFF] = {0x0};
+      memccpy(copy, my_str, '\0', copy_len);
+      if (leet_encode(copy))
+      {
+        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      }
+    }
+  }
+  if (upper_first || upper_full)
+  {
+    saved_len = strings_len;
+    for (size_t i = 0; i < saved_len; i++)
+    {
+      const char *my_str = all_strings[i];
+      size_t copy_len = strlen(my_str);
+      char copy[BUFF] = {0x0};
+      memccpy(copy, my_str, '\0', copy_len);
+      if (upper_encode(copy))
+      {
+        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      }
+    }
+  }
+  if (reverse_make_sense && reverse_full && last)
+  {
+    saved_len = strings_len;
+    for (size_t i = 0; i < saved_len; i++)
+    {
+      const char *my_str = all_strings[i];
+      size_t copy_len = strlen(my_str);
+      char copy[BUFF] = {0x0};
+      memccpy(copy, my_str, '\0', copy_len);
+      reverse(copy, copy_len);
+      strings_len = add_string(all_strings, strings_len, copy, copy_len);
+    }
+  }
+  saved_len = only_transform ? saved_len : 0;
   for (size_t i = 0; i < strings_len; i++)
   {
-    printf("%s\n", all_strings[i]);
-    if (all_upper)
+    if (i >= saved_len)
     {
-      for (size_t j = 0; j < strlen(all_strings[i]); j++)
-      {
-        if (all_strings[i][j] >= 97 && all_strings[i][j] <= 122)
-        {
-          all_strings[i][j] -= 32;
-        }
-      }
-      printf("%s\n", all_strings[i]);
-    }
-    else if (first_maiusc && all_strings[i][0] >= 97 && all_strings[i][0] <= 122)
-    {
-      all_strings[i][0] -= 32;
       printf("%s\n", all_strings[i]);
     }
     free(all_strings[i]);
   }
+}
+
+inline bool leet_encode(char *str)
+{
+  bool encoded = false;
+  while (*str != '\0')
+  {
+    if (leet_map[*str])
+    {
+      *str = leet_map[*str];
+      encoded = true;
+    }
+    str++;
+  }
+  return encoded;
+}
+
+inline bool upper_encode(char *str)
+{
+  bool encoded = false;
+  if (upper_full)
+  {
+    for (size_t j = 0; j < strlen(str); j++)
+    {
+      if (str[j] >= 97 && str[j] <= 122)
+      {
+        str[j] -= 32;
+        encoded = true;
+      }
+    }
+  }
+  else if (upper_first && str[0] >= 97 && str[0] <= 122)
+  {
+    str[0] -= 32;
+    encoded = true;
+  }
+  return encoded;
 }
 
 inline void swap_p(char **f, char **s)
@@ -229,29 +370,57 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
     arr[idx] = 1;
     gen_bin_perms(arr, size, idx + 1, max, cur + 1, min);
   }
-};
+}
 
 int main(int argc, char **argv)
 {
   int c, option_index = 0;
   size_t thread_n, queue_n;
-  while ((c = getopt_long(argc, argv, "l:c:s:e:u:a:", long_options, &option_index)) != -1)
+  while ((c = getopt_long(argc, argv, "u:l:p:k:c:s:e:r:", long_options, &option_index)) != -1)
   {
     switch (c)
     {
-    case 'a':
+    case 'r':
     {
-      if (optarg[0] == 'Y' || optarg[0] == 'y')
+      if (strcmp(optarg, "full") == 0)
       {
-        all_upper = true;
+        reverse_full = true;
+      }
+      else if (strcmp(optarg, "words") == 0)
+      {
+        reverse_words = true;
+      }
+      break;
+    }
+    case 'k':
+    {
+      if (strcmp(optarg, "full") == 0)
+      {
+        leet_full = true;
+      }
+      else if (strcmp(optarg, "vowel") == 0)
+      {
+        leet_vowel = true;
       }
       break;
     }
     case 'u':
     {
+      if (strcmp(optarg, "full") == 0)
+      {
+        upper_full = true;
+      }
+      else if (strcmp(optarg, "first") == 0)
+      {
+        upper_first = true;
+      }
+      break;
+    }
+    case 'p':
+    {
       if (optarg[0] == 'Y' || optarg[0] == 'y')
       {
-        first_maiusc = true;
+        only_transform = true;
       }
       break;
     }
@@ -259,37 +428,26 @@ int main(int argc, char **argv)
     {
       connectors = (char **)malloc(sizeof(char *) * BUFF);
       char connector_to_copy[2] = {0x0};
-      for (size_t i = 0; i < strlen(optarg); i++)
+      connectors_size = strlen(optarg);
+      for (size_t i = 0; i < connectors_size; i++)
       {
         connector_to_copy[0] = optarg[i];
         connectors[i] = (char *)malloc(sizeof(char) * 2);
         memccpy(connectors[i], connector_to_copy, '\0', sizeof(char) * 2);
       }
-      connectors_size = strlen(optarg);
       break;
     }
     case 'l':
     {
       last = (char **)malloc(sizeof(char *) * BUFF);
-      char connector_to_copy[BUFF] = {0x0};
-      size_t j = 0, x = 0;
-      for (size_t i = 0; i < strlen(optarg); i++)
+      char *token = strtok(optarg, ",");
+      size_t x = 0;
+      while (token != NULL)
       {
-        if (optarg[i] == ',' || (i + 1) == strlen(optarg))
-        {
-          if (j == 0)
-          {
-            connector_to_copy[j++] = optarg[i];
-          }
-          last[x] = (char *)malloc(sizeof(char) * ++j);
-          memccpy(last[x++], connector_to_copy, '\0', j);
-          memset(connector_to_copy, '\0', BUFF);
-          j = 0;
-        }
-        else
-        {
-          connector_to_copy[j++] = optarg[i];
-        }
+        last[x] = (char *)malloc(sizeof(char) * (strlen(token) + 1));
+        strcpy(last[x], token);
+        last[x++][strlen(token)] = '\0';
+        token = strtok(NULL, ",");
       }
       last_size = x;
       break;
@@ -335,6 +493,18 @@ int main(int argc, char **argv)
   {
     free_inputs_optind();
     exit_usage("Words after are not provided");
+  }
+
+  leet_map['a'] = leet_map['A'] = '4';
+  leet_map['e'] = leet_map['E'] = '3';
+  leet_map['i'] = leet_map['I'] = '1';
+  leet_map['o'] = leet_map['O'] = '0';
+  if (leet_full)
+  {
+    leet_map['s'] = leet_map['S'] = '5';
+    leet_map['t'] = leet_map['T'] = '7';
+    leet_map['g'] = leet_map['G'] = '9';
+    leet_map['z'] = leet_map['Z'] = '2';
   }
 
   word_size = (size_t)argc - (size_t)optind;

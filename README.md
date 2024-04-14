@@ -6,9 +6,19 @@
 ```
 --start        <mininum words to concatenate>
 --end          <maximum words to concatenate>
+```
+### Modifiers
+```
 --last         <words/chars to be putted at the end of each permutation (separeted by ,)>
 --connectors   <char/s to use as connector/s>
---upper        <y/n> print also the permutation with first letter in uppercase
+--upper        <full/first> print also the permutation with all/first letter/s in uppercase
+--leet         <full/vowel> print also the permutation with leet in all/vowel chars positions
+--reverse      <full/words> print also the permutation with reversed chars/words
+```
+### Specializer
+```
+--only_transformations <y/n> 
+if one or more modifiers are setted, print only the transformations created with all modifiers instead of printing each one
 ```
 ```
 words/chars go after parameters separeted by space
@@ -21,8 +31,4 @@ We dont't want any uppercase first character.
 ./seqperm --upper n --start 3 --end 5 --last 0,1 --connectors ,. a b c d e f g h i l m
 ```
 ## TO DO
-Implement ```--leet``` with leet option  
-Implement ```--allupper``` with full permutation in upper case  
-Implement ```--delim wo,rd``` for considering a word a possible shortener permutation, in a single permutation will be only the full word or its delim wo. Multiple handling of , is a plus   
-Replace argument parsing with better handling of parameters  
-Config file ?
+Implement ```--delim wo,rd``` for considering a word a possible shortener permutation, in a single permutation will be only the full word or its delim wo. Multiple handling of , is a plus
