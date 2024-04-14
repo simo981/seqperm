@@ -12,8 +12,10 @@
 --last         <words/chars to be putted at the end of each permutation (separeted by ,)>
 --connectors   <char/s to use as connector/s>
 --upper        <full/first> print also the permutation with all/first letter/s in uppercase
---leet         <full/first> print also the permutation with leet in all/vowel chars positions
+--leet         <full/vowel> print also the permutation with leet in all/vowel chars positions
+--reverse      <full/words> print also the permutation with reversed chars/words
 ```
+### Specializer
 ```
 --only_transformations <y/n> 
 if one or more modifiers are setted, print only the transformations created with all modifiers instead of printing each one

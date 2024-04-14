@@ -20,6 +20,8 @@ void free_inputs_optind(void);
 void exit_usage(char *plus);
 bool leet_encode(char *str);
 bool upper_encode(char *str);
+void reverse(char *str, size_t len);
+bool palindrome(char *str, size_t len);
 
 void exit_usage(char *plus)
 {
