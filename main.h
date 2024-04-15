@@ -17,6 +17,15 @@
     copy_len;                           \
   })
 
+#define CHECK_TRUE(var, message) \
+  ({                             \
+    if (var)                     \
+    {                            \
+      free_inputs_optind();      \
+      exit_usage(#message);      \
+    }                            \
+  })
+
 typedef struct bool_t
 {
   uint8_t leet_vowel : 1;
@@ -80,9 +89,8 @@ void exit_usage(char *plus)
 #define LOW(NAME, VAR1, VAR2) \
   if (VAR1 < VAR2)            \
   {                           \
-    perror(#NAME);            \
     free_inputs_optind();     \
-    exit(EXIT_FAILURE);       \
+    exit_usage(#NAME);        \
   }
 
 #define exErr(NAME) \

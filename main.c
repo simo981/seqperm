@@ -442,36 +442,20 @@ int main(int argc, char **argv)
     }
     case '?':
     {
-      free_inputs_optind();
-      exit_usage("wrong parameters");
+      CHECK_TRUE(true, "wrong parameters");
       break;
     }
     default:
     {
-      free_inputs_optind();
-      perror("OPTARG FAILURE");
-      exit(EXIT_FAILURE);
+      CHECK_TRUE(true, "optarg failure");
     }
     }
   }
 
-  // check if start or end are provided by the user
-  if (!min_len || !max_len)
-  {
-    free_inputs_optind();
-    exit_usage("start and end must be stated");
-  }
-  else
-  {
-    LOW("max_len must be greater than min_len", max_len, min_len);
-  }
-
-  // check if words are provided by the user
-  if (optind == argc)
-  {
-    free_inputs_optind();
-    exit_usage("Words after are not provided");
-  }
+  CHECK_TRUE(!min_len, "max_len must be stated");
+  CHECK_TRUE(!max_len, "min_len must be stated");
+  LOW("max_len must be greater than min_len", max_len, min_len);
+  CHECK_TRUE(optind == argc, "words not provided");
 
   leet_map['a'] = leet_map['A'] = '4';
   leet_map['e'] = leet_map['E'] = '3';
