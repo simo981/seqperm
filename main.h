@@ -8,6 +8,26 @@
 #include <string.h>
 #define BUFF 512
 
+#define COPY_STRING(dest, src)          \
+  ({                                    \
+    size_t copy_len = strlen(src);      \
+    memccpy(dest, src, '\0', copy_len); \
+    dest[copy_len] = '\0';              \
+    copy_len;                           \
+  })
+
+typedef struct bool_t
+{
+  uint8_t leet_vowel : 1;
+  uint8_t leet_full : 1;
+  uint8_t upper_first : 1;
+  uint8_t upper_full : 1;
+  uint8_t only_transform : 1;
+  uint8_t reverse_words : 1;
+  uint8_t reverse_full : 1;
+  uint8_t __padding : 1;
+} modifiers_t;
+
 void print_out(char **arr, size_t size);
 void print_f_maiusc(char **arr, char *string);
 void print_number(char **arr, char *finalString, size_t run_len);
@@ -16,6 +36,7 @@ void seq_perm(char **arr, size_t size);
 void *thread_perm(void *in);
 void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min);
 size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len);
+unsigned **binomial_coefficient(size_t n, size_t k);
 void free_inputs_optind(void);
 void exit_usage(char *plus);
 bool leet_encode(char *str);
