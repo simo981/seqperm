@@ -8,43 +8,14 @@
 #include <stdbool.h>
 #include <string.h>
 #define BUFF 512
-#define N_THREAD 8
 
-#define FREE_PPP(p, fc, size, sc, size2) \
-  ({                                     \
-    for (size_t i = fc; i < size; i++)   \
-    {                                    \
-      FREE_PP(p[i], sc, size2);          \
-    }                                    \
-    FREE_P(p);                           \
+#define COPY_STRING(dest, src)          \
+  ({                                    \
+    size_t copy_len = strlen(src);      \
+    memccpy(dest, src, '\0', copy_len); \
+    dest[copy_len] = '\0';              \
+    copy_len;                           \
   })
-
-#define FREE_PP(p, fc, size)             \
-  ({                                     \
-    if (p)                               \
-    {                                    \
-      for (size_t i = fc; i < size; i++) \
-      {                                  \
-        FREE_P(p[i]);                    \
-      }                                  \
-      FREE_P(p);                         \
-    }                                    \
-  })
-
-#define FREE_P(p) \
-  ({              \
-    if (p)        \
-    {             \
-      free(p);    \
-    }             \
-  })
-
-#define COPY_STRING(dest, src) ({     \
-  size_t copy_len = strlen(src);      \
-  memccpy(dest, src, '\0', copy_len); \
-  dest[copy_len] = '\0';              \
-  copy_len;                           \
-})
 
 #define CHECK_TRUE(var, message) \
   ({                             \
@@ -100,7 +71,7 @@ bool palindrome(char *str, size_t len);
 
 void exit_usage(char *plus)
 {
-  printf("%s\n./seqperm --upper full/first --leet full/vowel --only_transformations --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
+  printf("%s\n./seqperm --upper full/first --leet full/vowel --only_transformations y/n --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
   exit(EXIT_FAILURE);
 }
 
