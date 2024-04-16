@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <string.h>
 #define BUFF 512
+#define N_THREAD 8
 
 #define COPY_STRING(dest, src)          \
   ({                                    \

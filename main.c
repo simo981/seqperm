@@ -14,7 +14,7 @@ static size_t max_len = 0;
 static size_t min_len = 0;
 static char **dict;
 static size_t word_size;
-static Queue_t **all_queues = NULL;
+static Queue_t *global_queue = NULL;
 static char **connectors = NULL;
 static unsigned short ***delim_bins = NULL;
 static char leet_map[128] = {0x0};
@@ -301,7 +301,7 @@ void *thread_perm(void *in)
   input_t *words;
   for (;;)
   {
-    words = pop_queue(all_queues[queuePos]);
+    words = pop_queue(global_queue);
     if (words == NULL)
     {
       break;
@@ -376,7 +376,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
             delim_t *delim_word = &delim_words[j];
             full_dict[size_dict++] = x[j] ? strdup(delim_word->p2) : strdup(delim_word->p1);
           }
-          push_queue(all_queues[cur - min], full_dict, cur);
+          push_queue(global_queue, full_dict, cur);
         }
         for (size_t i = 0; i < delim; i++)
         {
@@ -394,7 +394,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
       }
       else
       {
-        push_queue(all_queues[cur - min], auxPerm, pointer);
+        push_queue(global_queue, auxPerm, pointer);
       }
     }
     return;
@@ -411,7 +411,6 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
 int main(int argc, char **argv)
 {
   int c, option_index = 0;
-  size_t thread_n, queue_n;
   while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:", long_options, &option_index)) != -1)
   {
     switch (c)
@@ -507,9 +506,7 @@ int main(int argc, char **argv)
   }
 
   word_size = (size_t)argc - (size_t)optind;
-  queue_n = max_len - min_len + 1;
-  thread_n = (size_t)(max_len * (max_len + 1)) / 2;
-  all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queue_n);
+  global_queue = default_init_queue();
   size_t n_delim = 0;
   size_t optind_copy = optind;
   for (size_t i = 0; i < word_size; i++)
@@ -529,10 +526,6 @@ int main(int argc, char **argv)
     free(bin);
   }
   delim_bins = bin_delim;
-  for (size_t i = 0; i < queue_n; i++)
-  {
-    all_queues[i] = default_init_queue();
-  }
   char **input_words = (char **)malloc(sizeof(char *) * word_size);
   for (size_t i = 0; i < word_size; i++)
   {
@@ -547,20 +540,14 @@ int main(int argc, char **argv)
   }
   gen_bin_perms(bin, word_size, 0, max_len, 0, min_len);
   free(bin);
-  pthread_t tworker[thread_n];
+  pthread_t tworker[N_THREAD];
   memset(&tworker, 0x0, sizeof(tworker));
   size_t pos = 0;
-  for (size_t i = 0; i < queue_n; i++)
+  for (size_t i = 0; i < N_THREAD; i++)
   {
-    size_t j = i + 1;
-    while (j > 0)
-    {
-      pthread_create(&tworker[pos], NULL, thread_perm, (void *)i);
-      j--;
-      pos++;
-    }
+    pthread_create(&tworker[pos], NULL, thread_perm, (void *)i);
   }
-  for (size_t i = 0; i < thread_n; i++)
+  for (size_t i = 0; i < N_THREAD; i++)
   {
     pthread_join(tworker[i], NULL);
   }
@@ -573,11 +560,6 @@ int main(int argc, char **argv)
     free(bin_delim[i]);
   }
   free(bin_delim);
-  for (size_t i = 0; i < queue_n; i++)
-  {
-    free_queue(all_queues[i]);
-    free(all_queues[i]);
-  }
   for (size_t i = 0; i < connectors_size; i++)
   {
     free(connectors[i]);
@@ -587,7 +569,8 @@ int main(int argc, char **argv)
     free(last[i]);
   }
   free_inputs_optind();
-  free(all_queues);
+  free_queue(global_queue);
+  free(global_queue);
   free(input_words);
   return 0;
 }
