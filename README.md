@@ -17,7 +17,7 @@
 ```
 ### Specializer
 ```
---only_transformations <y/n> 
+--only_transformations
 if one or more modifiers are setted, print only the transformations created with all modifiers instead of printing each one
 ```
 ```
