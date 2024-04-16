@@ -402,6 +402,11 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
           }
           push_queue(all_queues[cur - min], full_dict, cur);
         }
+        for (size_t i = 0; i < delim; i++)
+        {
+          free(delim_words[i].p1);
+          free(delim_words[i].p2);
+        }
       }
       else
       {
