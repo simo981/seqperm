@@ -33,7 +33,7 @@ We want all permutation without repetition of ``` a b c d e f g h i l m ``` of 3
 
 We dont't want any uppercase first character.
 ```
-./seqperm --upper n --start 3 --end 5 --last 0,1 --connectors ,. a b c d e f g h i l m
+./seqperm --start 3 --end 5 --last 0,1 --connectors ,. a b c d e f g h i l m
 ```
 ## Complexity as number of permutation generated
 $$
