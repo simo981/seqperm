@@ -348,7 +348,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
   {
     if (cur >= min && cur <= max)
     {
-      char **auxPerm = (char **)malloc(sizeof(char *) * cur);
+      char **auxPerm = (char **)calloc(cur, sizeof(char *));
       size_t pointer = 0, delim = 0;
       size_t idx_delim[word_size];
       for (size_t j = 0; j < word_size; j++)
@@ -407,10 +407,17 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
           free(delim_words[i].p1);
           free(delim_words[i].p2);
         }
+        for (size_t i = 0; i < cur; i++)
+        {
+          if (auxPerm[i] != NULL)
+          {
+            free(auxPerm[i]);
+          }
+        }
       }
       else
       {
-        push_queue(all_queues[cur - min], auxPerm, cur);
+        push_queue(all_queues[cur - min], auxPerm, pointer);
       }
     }
     return;
