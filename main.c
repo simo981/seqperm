@@ -59,7 +59,7 @@ static struct option long_options[] =
     {
         {"upper", required_argument, 0, 'u'},
         {"last", required_argument, 0, 'l'},
-        {"only_transformations", required_argument, 0, 'p'},
+        {"only_transformations", no_argument, 0, 'p'},
         {"reverse", required_argument, 0, 'r'},
         {"leet", required_argument, 0, 'k'},
         {"connectors", required_argument, 0, 'c'},
@@ -412,52 +412,31 @@ int main(int argc, char **argv)
 {
   int c, option_index = 0;
   size_t thread_n, queue_n;
-  while ((c = getopt_long(argc, argv, "u:l:p:k:c:s:e:r:", long_options, &option_index)) != -1)
+  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:", long_options, &option_index)) != -1)
   {
     switch (c)
     {
     case 'r':
     {
-      if (strcmp(optarg, "full") == 0)
-      {
-        bool_modifiers.reverse_full = true;
-      }
-      else if (strcmp(optarg, "words") == 0)
-      {
-        bool_modifiers.reverse_words = true;
-      }
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.reverse_full);
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "words"), bool_modifiers.reverse_words);
       break;
     }
     case 'k':
     {
-      if (strcmp(optarg, "full") == 0)
-      {
-        bool_modifiers.leet_full = true;
-      }
-      else if (strcmp(optarg, "vowel") == 0)
-      {
-        bool_modifiers.leet_vowel = true;
-      }
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.leet_full);
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "vowel"), bool_modifiers.leet_vowel);
       break;
     }
     case 'u':
     {
-      if (strcmp(optarg, "full") == 0)
-      {
-        bool_modifiers.upper_full = true;
-      }
-      else if (strcmp(optarg, "first") == 0)
-      {
-        bool_modifiers.upper_first = true;
-      }
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.upper_full);
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "first"), bool_modifiers.upper_first);
       break;
     }
     case 'p':
     {
-      if (optarg[0] == 'Y' || optarg[0] == 'y')
-      {
-        bool_modifiers.only_transform = true;
-      }
+      bool_modifiers.only_transform = true;
       break;
     }
     case 'c':
@@ -531,7 +510,6 @@ int main(int argc, char **argv)
   queue_n = max_len - min_len + 1;
   thread_n = (size_t)(max_len * (max_len + 1)) / 2;
   all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queue_n);
-  // find n_delim
   size_t n_delim = 0;
   size_t optind_copy = optind;
   for (size_t i = 0; i < word_size; i++)
@@ -553,7 +531,7 @@ int main(int argc, char **argv)
   delim_bins = bin_delim;
   for (size_t i = 0; i < queue_n; i++)
   {
-    all_queues[i] = default_init_queue(); // need to calculate n of elements given min max delim size ?
+    all_queues[i] = default_init_queue();
   }
   char **input_words = (char **)malloc(sizeof(char *) * word_size);
   for (size_t i = 0; i < word_size; i++)

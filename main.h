@@ -26,6 +26,14 @@
     }                            \
   })
 
+#define CALL_ZERO_SET_TRUE(call, var) \
+  ({                                  \
+    if (call == 0)                    \
+    {                                 \
+      var = true;                     \
+    }                                 \
+  })
+
 typedef struct bool_t
 {
   uint8_t leet_vowel : 1;
