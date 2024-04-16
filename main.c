@@ -378,9 +378,9 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
           p = strtok(pp, ",");
           delim_words[delim_size].p1 = strdup(p);
           p = strtok(NULL, ",");
-          char *copy = (char *)malloc(sizeof(char) * strlen(delim_words[delim_size].p1) + strlen(p) + 1);
-          strcat(copy, delim_words[delim_size].p1);
-          strcat(copy, p);
+          char *copy = (char *)malloc(sizeof(char) * (strlen(delim_words[delim_size].p1) + strlen(p) + 1));
+          copy = strcat(copy, delim_words[delim_size].p1);
+          copy = strcat(copy, p);
           delim_words[delim_size++].p2 = copy;
           free(pp);
         }
