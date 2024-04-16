@@ -18,7 +18,7 @@ Queue_t *init_queue(size_t size)
     perror("POINTER_QUEUE_INIT_FAIL");
     exit(EXIT_FAILURE);
   }
-  Q->words = (input_t **)malloc(sizeof(input_t *) * size);
+  Q->words = (input_t **)calloc(size, sizeof(input_t *));
   if (Q->words == NULL)
   {
     perror("BUCKET_QUEUE_INIT_FAIL");
