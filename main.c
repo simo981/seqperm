@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -19,15 +20,9 @@ static char **last = NULL;
 static size_t connectors_size = 0;
 static size_t last_size = 0;
 static const char *connector_placeholder = "|";
-static bool leet_vowel = false;
-static bool leet_full = false;
-static bool upper_first = false;
-static bool upper_full = false;
-static bool only_transform = false;
-static bool reverse_words = false;
-static bool reverse_full = false;
+static modifiers_t bool_modifiers = {0x0};
 
-unsigned **binomialCoefficient(size_t n, size_t k)
+unsigned **binomial_coefficient(size_t n, size_t k)
 {
   unsigned **C = (unsigned **)calloc(n + 1, sizeof(unsigned *));
   for (size_t i = 0; i <= n; i++)
@@ -88,26 +83,21 @@ inline bool palindrome(char *str, size_t len)
 {
   char *p1 = str;
   char *p2 = str + len - 1;
-  char *mid = str + (size_t)len / 2;
-  while (p1 != mid && p2 != mid)
+  char *mid = str + (size_t)(len / 2);
+  while (p1 < mid && p2 >= mid)
   {
     if (*p1++ != *p2--)
     {
       return false;
     }
   }
-  if (p1 == mid && p2 == mid)
-  {
-    return true;
-  }
-  return false;
+  return true;
 }
 
 inline void reverse(char *str, size_t len)
 {
   char *p1 = str;
   char *p2 = str + len - 1;
-
   while (p1 < p2)
   {
     char tmp = *p1;
@@ -131,7 +121,7 @@ inline void print_out(char **arr, size_t size)
     run_len += lengths[i];
   }
   strings_len = add_string(all_strings, strings_len, finalString, run_len);
-  if (reverse_words || reverse_full)
+  if (bool_modifiers.reverse_words || bool_modifiers.reverse_full)
   {
     size_t one = 0, palindrome_count = 0;
     for (size_t i = 0; i < size; i++)
@@ -149,15 +139,13 @@ inline void print_out(char **arr, size_t size)
     {
       reverse_make_sense = true;
     }
-    if (reverse_make_sense && reverse_words)
+    if (reverse_make_sense && bool_modifiers.reverse_words)
     {
       saved_len = strings_len;
       for (size_t i = 0; i < saved_len; i++)
       {
-        const char *my_str = all_strings[i];
-        size_t copy_len = strlen(my_str);
         char copy[BUFF] = {0x0};
-        memccpy(copy, my_str, '\0', copy_len);
+        size_t copy_len = COPY_STRING(copy, all_strings[i]);
         reverse(copy, copy_len);
         strings_len = add_string(all_strings, strings_len, copy, copy_len);
       }
@@ -186,10 +174,8 @@ inline void print_out(char **arr, size_t size)
     for (size_t i = 0; i < saved_len; i++)
     {
       size_t size_of_number;
-      const char *my_str = all_strings[i];
-      size_t copy_len = strlen(my_str);
       char copy[BUFF] = {0x0};
-      memccpy(copy, my_str, '\0', copy_len);
+      size_t copy_len = COPY_STRING(copy, all_strings[i]);
       for (size_t j = 0; j < last_size; j++)
       {
         size_of_number = strlen(last[j]);
@@ -198,50 +184,44 @@ inline void print_out(char **arr, size_t size)
       }
     }
   }
-  if (leet_full || leet_vowel)
+  if (bool_modifiers.leet_full || bool_modifiers.leet_vowel)
   {
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
-      const char *my_str = all_strings[i];
-      size_t copy_len = strlen(my_str);
       char copy[BUFF] = {0x0};
-      memccpy(copy, my_str, '\0', copy_len);
+      size_t copy_len = COPY_STRING(copy, all_strings[i]);
       if (leet_encode(copy))
       {
         strings_len = add_string(all_strings, strings_len, copy, copy_len);
       }
     }
   }
-  if (upper_first || upper_full)
+  if (bool_modifiers.upper_first || bool_modifiers.upper_full)
   {
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
-      const char *my_str = all_strings[i];
-      size_t copy_len = strlen(my_str);
       char copy[BUFF] = {0x0};
-      memccpy(copy, my_str, '\0', copy_len);
+      size_t copy_len = COPY_STRING(copy, all_strings[i]);
       if (upper_encode(copy))
       {
         strings_len = add_string(all_strings, strings_len, copy, copy_len);
       }
     }
   }
-  if (reverse_make_sense && reverse_full && last)
+  if (reverse_make_sense && bool_modifiers.reverse_full)
   {
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
-      const char *my_str = all_strings[i];
-      size_t copy_len = strlen(my_str);
       char copy[BUFF] = {0x0};
-      memccpy(copy, my_str, '\0', copy_len);
+      size_t copy_len = COPY_STRING(copy, all_strings[i]);
       reverse(copy, copy_len);
       strings_len = add_string(all_strings, strings_len, copy, copy_len);
     }
   }
-  saved_len = only_transform ? saved_len : 0;
+  saved_len = bool_modifiers.only_transform ? saved_len : 0;
   for (size_t i = 0; i < strings_len; i++)
   {
     if (i >= saved_len)
@@ -270,20 +250,20 @@ inline bool leet_encode(char *str)
 inline bool upper_encode(char *str)
 {
   bool encoded = false;
-  if (upper_full)
+  if (bool_modifiers.upper_full)
   {
-    for (size_t j = 0; j < strlen(str); j++)
+    for (char *ptr = str; *ptr != '\0'; ptr++)
     {
-      if (str[j] >= 97 && str[j] <= 122)
+      if (islower(*ptr))
       {
-        str[j] -= 32;
+        *ptr = toupper((unsigned char)*ptr);
         encoded = true;
       }
     }
   }
-  else if (upper_first && str[0] >= 97 && str[0] <= 122)
+  else if (bool_modifiers.upper_first && islower((unsigned char)str[0]))
   {
-    str[0] -= 32;
+    str[0] = toupper((unsigned char)str[0]);
     encoded = true;
   }
   return encoded;
@@ -312,8 +292,7 @@ void seq_perm(char **arr, size_t size)
     }
     else
     {
-      P[i] = 0;
-      i++;
+      P[i++] = 0;
     }
   }
   free(P);
@@ -355,8 +334,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
         if (arr[j] == 1)
         {
           auxPerm[pointer] = (char *)calloc(strlen(dict[j]) + 1, sizeof(char));
-          memccpy(auxPerm[pointer], dict[j], '\0', strlen(dict[j]));
-          pointer++;
+          memccpy(auxPerm[pointer++], dict[j], '\0', strlen(dict[j]));
         }
       }
       push_queue(all_queues[cur - min], auxPerm, cur);
@@ -384,11 +362,11 @@ int main(int argc, char **argv)
     {
       if (strcmp(optarg, "full") == 0)
       {
-        reverse_full = true;
+        bool_modifiers.reverse_full = true;
       }
       else if (strcmp(optarg, "words") == 0)
       {
-        reverse_words = true;
+        bool_modifiers.reverse_words = true;
       }
       break;
     }
@@ -396,11 +374,11 @@ int main(int argc, char **argv)
     {
       if (strcmp(optarg, "full") == 0)
       {
-        leet_full = true;
+        bool_modifiers.leet_full = true;
       }
       else if (strcmp(optarg, "vowel") == 0)
       {
-        leet_vowel = true;
+        bool_modifiers.leet_vowel = true;
       }
       break;
     }
@@ -408,11 +386,11 @@ int main(int argc, char **argv)
     {
       if (strcmp(optarg, "full") == 0)
       {
-        upper_full = true;
+        bool_modifiers.upper_full = true;
       }
       else if (strcmp(optarg, "first") == 0)
       {
-        upper_first = true;
+        bool_modifiers.upper_first = true;
       }
       break;
     }
@@ -420,7 +398,7 @@ int main(int argc, char **argv)
     {
       if (optarg[0] == 'Y' || optarg[0] == 'y')
       {
-        only_transform = true;
+        bool_modifiers.only_transform = true;
       }
       break;
     }
@@ -464,42 +442,26 @@ int main(int argc, char **argv)
     }
     case '?':
     {
-      free_inputs_optind();
-      exit_usage("wrong parameters");
+      CHECK_TRUE(true, "wrong parameters");
       break;
     }
     default:
     {
-      free_inputs_optind();
-      perror("OPTARG FAILURE");
-      exit(EXIT_FAILURE);
+      CHECK_TRUE(true, "optarg failure");
     }
     }
   }
 
-  // check if start or end are provided by the user
-  if (!min_len || !max_len)
-  {
-    free_inputs_optind();
-    exit_usage("start and end must be stated");
-  }
-  else
-  {
-    LOW("max_len must be greater than min_len", max_len, min_len);
-  }
-
-  // check if words are provided by the user
-  if (optind == argc)
-  {
-    free_inputs_optind();
-    exit_usage("Words after are not provided");
-  }
+  CHECK_TRUE(!min_len, "max_len must be stated");
+  CHECK_TRUE(!max_len, "min_len must be stated");
+  LOW("max_len must be greater than min_len", max_len, min_len);
+  CHECK_TRUE(optind == argc, "words not provided");
 
   leet_map['a'] = leet_map['A'] = '4';
   leet_map['e'] = leet_map['E'] = '3';
   leet_map['i'] = leet_map['I'] = '1';
   leet_map['o'] = leet_map['O'] = '0';
-  if (leet_full)
+  if (bool_modifiers.leet_full)
   {
     leet_map['s'] = leet_map['S'] = '5';
     leet_map['t'] = leet_map['T'] = '7';
@@ -511,7 +473,7 @@ int main(int argc, char **argv)
   queue_n = max_len - min_len + 1;
   thread_n = (size_t)(max_len * (max_len + 1)) / 2;
   all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queue_n);
-  unsigned **C = binomialCoefficient(word_size, max_len);
+  unsigned **C = binomial_coefficient(word_size, max_len);
   for (size_t i = 0; i < queue_n; i++)
   {
     all_queues[i] = init_queue(C[word_size][min_len + i]);
