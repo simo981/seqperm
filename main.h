@@ -38,6 +38,12 @@ typedef struct bool_t
   uint8_t __padding : 1;
 } modifiers_t;
 
+typedef struct delim_t
+{
+  char *p1;
+  char *p2;
+} delim_t;
+
 void print_out(char **arr, size_t size);
 void print_f_maiusc(char **arr, char *string);
 void print_number(char **arr, char *finalString, size_t run_len);
@@ -46,6 +52,7 @@ void seq_perm(char **arr, size_t size);
 void *thread_perm(void *in);
 void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min);
 size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len);
+void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min, unsigned short ***out, size_t *out_size);
 unsigned **binomial_coefficient(size_t n, size_t k);
 void free_inputs_optind(void);
 void exit_usage(char *plus);
