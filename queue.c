@@ -57,6 +57,8 @@ void free_queue(Queue_t *Q)
 
 void resize(Queue_t *Q)
 {
+  size_t old_size = Q->maxsize;
   Q->maxsize *= 2;
   Q->words = (input_t **)realloc(Q->words, sizeof(input_t *) * Q->maxsize);
+  memset(Q->words + old_size, 0x0, sizeof(input_t *) * (Q->maxsize - old_size));
 }
