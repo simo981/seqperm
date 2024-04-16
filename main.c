@@ -414,6 +414,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
             free(auxPerm[i]);
           }
         }
+        free(auxPerm);
       }
       else
       {
@@ -621,7 +622,9 @@ int main(int argc, char **argv)
     {
       free(bin_delim[i][j]);
     }
+    free(bin_delim[i]);
   }
+  free(bin_delim);
   for (size_t i = 0; i < queue_n; i++)
   {
     free_queue(all_queues[i]);
