@@ -370,6 +370,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
       if (delim)
       {
         delim_t delim_words[delim];
+        memset(&delim_words, 0x0, sizeof(delim_t) * delim);
         size_t delim_size = 0;
         for (size_t d = 0; d < delim; d++)
         {
