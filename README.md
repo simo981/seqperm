@@ -21,6 +21,11 @@
 if one or more modifiers are setted, print only the transformations created with all modifiers instead of printing each one
 ```
 ```
+All the words with the delimiter "," (ex. fish,es) will be considered as shortened permutation, in this case only short string or full string will be in a single permutation.
+So, if you have in input fishes and fish and max word = 2, the permutation fishesfish will be created.
+Instead, if "," is used, and in input you have fish,es the permutation fishesfish will not be created, but you'll have (for example) fishOTHERWORD fishesOTHERWORD
+```
+```
 words/chars go after parameters separeted by space
 ```
 ## Sample Usage
@@ -30,5 +35,7 @@ We dont't want any uppercase first character.
 ```
 ./seqperm --upper n --start 3 --end 5 --last 0,1 --connectors ,. a b c d e f g h i l m
 ```
-## TO DO
-Implement ```--delim wo,rd``` for considering a word a possible shortener permutation, in a single permutation will be only the full word or its delim wo. Multiple handling of , is a plus
+## Complexity as number of permutation generated
+$$
+(\sum_{k=start}^{end}{\binom{words}{k} \cdot k!}) \times (connectors + 1) \times (upper + 1) \times (last + 1) \times (leet + 1) \times (reverse + 1)
+$$

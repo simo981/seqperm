@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -15,6 +16,7 @@ static char **dict;
 static size_t word_size;
 static Queue_t **all_queues = NULL;
 static char **connectors = NULL;
+static unsigned short ***delim_bins = NULL;
 static char leet_map[128] = {0x0};
 static char **last = NULL;
 static size_t connectors_size = 0;
@@ -22,28 +24,23 @@ static size_t last_size = 0;
 static const char *connector_placeholder = "|";
 static modifiers_t bool_modifiers = {0x0};
 
-unsigned **binomial_coefficient(size_t n, size_t k)
+void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min, unsigned short ***out, size_t *out_size)
 {
-  unsigned **C = (unsigned **)calloc(n + 1, sizeof(unsigned *));
-  for (size_t i = 0; i <= n; i++)
+  if (idx == size)
   {
-    C[i] = (unsigned *)calloc(k + 1, sizeof(unsigned));
+    unsigned short *copy = (unsigned short *)malloc(sizeof(unsigned short) * size);
+    memcpy(copy, arr, sizeof(unsigned short) * size);
+    out[size][*out_size] = copy;
+    *out_size = *out_size + 1;
+    return;
   }
-  for (size_t i = 0; i <= n; i++)
+  arr[idx] = 0;
+  gen_bin_to_arr(arr, size, idx + 1, max, cur, min, out, out_size);
+  if (cur < max)
   {
-    for (size_t j = 0; j <= k && j <= i; j++)
-    {
-      if (j == 0 || j == i)
-      {
-        C[i][j] = 1;
-      }
-      else
-      {
-        C[i][j] = C[i - 1][j - 1] + C[i - 1][j];
-      }
-    }
+    arr[idx] = 1;
+    gen_bin_to_arr(arr, size, idx + 1, max, cur + 1, min, out, out_size);
   }
-  return C;
 }
 
 void free_inputs_optind(void)
@@ -111,7 +108,7 @@ inline void print_out(char **arr, size_t size)
   char finalString[BUFF] = {0x0};
   char *all_strings[BUFF] = {0x0};
   size_t run_len = 0, strings_len = 0;
-  size_t lengths[size];
+  size_t lengths[BUFF];
   size_t saved_len = 0;
   size_t reverse_make_sense = false;
   for (size_t i = 0; i < size; i++)
@@ -327,17 +324,78 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
   {
     if (cur >= min && cur <= max)
     {
-      char **auxPerm = (char **)malloc(sizeof(char *) * cur);
-      size_t pointer = 0;
+      char **auxPerm = (char **)calloc(cur, sizeof(char *));
+      size_t pointer = 0, delim = 0;
+      size_t idx_delim[word_size];
       for (size_t j = 0; j < word_size; j++)
       {
         if (arr[j] == 1)
         {
-          auxPerm[pointer] = (char *)calloc(strlen(dict[j]) + 1, sizeof(char));
-          memccpy(auxPerm[pointer++], dict[j], '\0', strlen(dict[j]));
+          char *p = strchr(dict[j], ',');
+          if (p == NULL)
+          {
+            auxPerm[pointer] = (char *)calloc(strlen(dict[j]) + 1, sizeof(char));
+            memccpy(auxPerm[pointer++], dict[j], '\0', strlen(dict[j]));
+          }
+          else
+          {
+            idx_delim[delim++] = j;
+          }
         }
       }
-      push_queue(all_queues[cur - min], auxPerm, cur);
+      if (delim)
+      {
+        delim_t delim_words[delim];
+        memset(&delim_words, 0x0, sizeof(delim_t) * delim);
+        size_t delim_size = 0;
+        for (size_t d = 0; d < delim; d++)
+        {
+          char *pp = strdup(dict[idx_delim[d]]);
+          char *p = strtok(pp, ",");
+          delim_words[delim_size].p1 = strdup(p);
+          p = strtok(NULL, ",");
+          char *copy = (char *)calloc(strlen(delim_words[delim_size].p1) + strlen(p) + 1, sizeof(char));
+          copy = strcat(copy, delim_words[delim_size].p1);
+          copy = strcat(copy, p);
+          delim_words[delim_size++].p2 = copy;
+          free(pp);
+        }
+        size_t n_bin_delim = (size_t)(1 << delim);
+        unsigned short **bins = delim_bins[delim];
+        for (size_t i = 0; i < n_bin_delim; i++)
+        {
+          char **full_dict = (char **)malloc(sizeof(char *) * cur);
+          for (size_t n = 0; n < pointer; n++)
+          {
+            full_dict[n] = strdup(auxPerm[n]);
+          }
+          size_t size_dict = pointer;
+          unsigned short *x = bins[i];
+          for (size_t j = 0; j < delim; j++)
+          {
+            delim_t *delim_word = &delim_words[j];
+            full_dict[size_dict++] = x[j] ? strdup(delim_word->p2) : strdup(delim_word->p1);
+          }
+          push_queue(all_queues[cur - min], full_dict, cur);
+        }
+        for (size_t i = 0; i < delim; i++)
+        {
+          free(delim_words[i].p1);
+          free(delim_words[i].p2);
+        }
+        for (size_t i = 0; i < cur; i++)
+        {
+          if (auxPerm[i] != NULL)
+          {
+            free(auxPerm[i]);
+          }
+        }
+        free(auxPerm);
+      }
+      else
+      {
+        push_queue(all_queues[cur - min], auxPerm, pointer);
+      }
     }
     return;
   }
@@ -473,16 +531,30 @@ int main(int argc, char **argv)
   queue_n = max_len - min_len + 1;
   thread_n = (size_t)(max_len * (max_len + 1)) / 2;
   all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queue_n);
-  unsigned **C = binomial_coefficient(word_size, max_len);
+  // find n_delim
+  size_t n_delim = 0;
+  size_t optind_copy = optind;
+  for (size_t i = 0; i < word_size; i++)
+  {
+    if (strchr(argv[optind_copy++], ',') != NULL)
+    {
+      n_delim++;
+    }
+  }
+  unsigned short ***bin_delim = (unsigned short ***)malloc(sizeof(unsigned short **) * (n_delim + 1));
+  for (size_t i = 1; i < n_delim + 1; i++)
+  {
+    bin_delim[i] = (unsigned short **)malloc(sizeof(unsigned short *) * (1 << i));
+    unsigned short *bin = (unsigned short *)calloc(i, sizeof(unsigned short));
+    size_t bd_size = 0;
+    gen_bin_to_arr(bin, i, 0, i, 0, 0, bin_delim, &bd_size);
+    free(bin);
+  }
+  delim_bins = bin_delim;
   for (size_t i = 0; i < queue_n; i++)
   {
-    all_queues[i] = init_queue(C[word_size][min_len + i]);
+    all_queues[i] = default_init_queue(); // need to calculate n of elements given min max delim size ?
   }
-  for (size_t i = 0; i < word_size + 1; i++)
-  {
-    free(C[i]);
-  }
-  free(C);
   char **input_words = (char **)malloc(sizeof(char *) * word_size);
   for (size_t i = 0; i < word_size; i++)
   {
@@ -514,6 +586,15 @@ int main(int argc, char **argv)
   {
     pthread_join(tworker[i], NULL);
   }
+  for (size_t i = 1; i < n_delim + 1; i++)
+  {
+    for (size_t j = 0; j < (1 << i); j++)
+    {
+      free(bin_delim[i][j]);
+    }
+    free(bin_delim[i]);
+  }
+  free(bin_delim);
   for (size_t i = 0; i < queue_n; i++)
   {
     free_queue(all_queues[i]);
