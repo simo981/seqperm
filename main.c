@@ -371,11 +371,10 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
       {
         delim_t delim_words[delim];
         size_t delim_size = 0;
-        char *p;
         for (size_t d = 0; d < delim; d++)
         {
           char *pp = strdup(dict[idx_delim[d]]);
-          p = strtok(pp, ",");
+          char *p = strtok(pp, ",");
           delim_words[delim_size].p1 = strdup(p);
           p = strtok(NULL, ",");
           char *copy = (char *)malloc(sizeof(char) * (strlen(delim_words[delim_size].p1) + strlen(p) + 1));
