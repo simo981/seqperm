@@ -43,30 +43,6 @@ void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, si
   }
 }
 
-unsigned **binomial_coefficient(size_t n, size_t k)
-{
-  unsigned **C = (unsigned **)calloc(n + 1, sizeof(unsigned *));
-  for (size_t i = 0; i <= n; i++)
-  {
-    C[i] = (unsigned *)calloc(k + 1, sizeof(unsigned));
-  }
-  for (size_t i = 0; i <= n; i++)
-  {
-    for (size_t j = 0; j <= k && j <= i; j++)
-    {
-      if (j == 0 || j == i)
-      {
-        C[i][j] = 1;
-      }
-      else
-      {
-        C[i][j] = C[i - 1][j - 1] + C[i - 1][j];
-      }
-    }
-  }
-  return C;
-}
-
 void free_inputs_optind(void)
 {
   if (connectors)
@@ -575,16 +551,10 @@ int main(int argc, char **argv)
     free(bin);
   }
   delim_bins = bin_delim;
-  unsigned **C = binomial_coefficient(word_size, max_len);
   for (size_t i = 0; i < queue_n; i++)
   {
     all_queues[i] = default_init_queue(); // need to calculate n of elements given min max delim size ?
   }
-  for (size_t i = 0; i < word_size + 1; i++)
-  {
-    free(C[i]);
-  }
-  free(C);
   char **input_words = (char **)malloc(sizeof(char *) * word_size);
   for (size_t i = 0; i < word_size; i++)
   {
