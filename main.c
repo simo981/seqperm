@@ -552,14 +552,14 @@ int main(int argc, char **argv)
       n_delim++;
     }
   }
-  unsigned short ***bin_delim = (unsigned short ***)malloc(sizeof(unsigned short **) * n_delim + 1);
+  unsigned short ***bin_delim = (unsigned short ***)malloc(sizeof(unsigned short **) * (n_delim + 1));
   for (size_t i = 1; i < n_delim + 1; i++)
   {
     bin_delim[i] = (unsigned short **)malloc(sizeof(unsigned short *) * (1 << i));
-    unsigned short bin[i];
-    memset(&bin, 0x0, sizeof(unsigned short) * i);
+    unsigned short *bin = (unsigned short *)calloc(i, sizeof(unsigned short));
     size_t bd_size = 0;
     gen_bin_to_arr(bin, i, 0, i, 0, 0, bin_delim, &bd_size);
+    free(bin);
   }
   delim_bins = bin_delim;
   unsigned **C = binomial_coefficient(word_size, max_len);
