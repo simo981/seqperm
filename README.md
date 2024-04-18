@@ -28,6 +28,12 @@ Instead, if "," is used, and in input you have fish,es the permutation fishesfis
 ```
 words/chars go after parameters separeted by space
 ```
+## Compile and Run
+```
+1) Change number of threads directly in file main.h (best probably would be same number of phisical core)
+2) $ make
+3) $ ./seperm <parameters>
+```
 ## Sample Usage
 We want all permutation without repetition of ``` a b c d e f g h i l m ``` of 3/4/5 characters length with connectors ```,``` and ```.``` between chars and numbers ```0``` and ```1``` at the end. 
 
