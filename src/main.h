@@ -39,12 +39,13 @@
     }             \
   })
 
-#define COPY_STRING(dest, src) ({     \
-  size_t copy_len = strlen(src);      \
-  memccpy(dest, src, '\0', copy_len); \
-  dest[copy_len] = '\0';              \
-  copy_len;                           \
-})
+#define COPY_STRING(dest, src)          \
+  ({                                    \
+    size_t copy_len = strlen(src);      \
+    memccpy(dest, src, '\0', copy_len); \
+    dest[copy_len] = '\0';              \
+    copy_len;                           \
+  })
 
 #define CALL_ZERO_SET_TRUE(call, var) \
   ({                                  \
@@ -101,7 +102,7 @@ bool palindrome(char *str, size_t len);
 
 void exit_usage(char *plus)
 {
-  printf("%s\n./seqperm --upper full/first --leet full/vowel --only_transformations y/n --start <min words> --end <max words> --last N1,N2,... --connectors ... w1 w2 w3 w4\n", plus);
+  printf("%s\n./seqperm --reverse full/words --upper full/first --leet full/vowel --start <min words> --end <max words> --last N1,N2,... --only_transformations  --connectors ... w1 w2 w3 w4\n", plus);
   exit(EXIT_FAILURE);
 }
 
@@ -115,31 +116,11 @@ void exit_usage(char *plus)
     exit(EXIT_FAILURE);      \
   }
 
-#define UNDEF(NAME, VAR)  \
-  if (VAR == NULL)        \
-  {                       \
-    perror(#NAME);        \
-    free_inputs_optind(); \
-    exit(EXIT_FAILURE);   \
-  }
-
-#define LE0(NAME, VAR)    \
-  if (VAR <= 0)           \
-  {                       \
-    perror(#NAME);        \
-    free_inputs_optind(); \
-    exit(EXIT_FAILURE);   \
-  }
-
 #define LOW(NAME, VAR1, VAR2) \
   if (VAR1 < VAR2)            \
   {                           \
     free_inputs_optind();     \
     exit_usage(#NAME);        \
   }
-
-#define exErr(NAME) \
-  perror(#NAME);    \
-  exit(EXIT_FAILURE);
 
 #endif

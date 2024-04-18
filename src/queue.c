@@ -13,17 +13,9 @@ Queue_t *default_init_queue()
 Queue_t *init_queue(size_t size)
 {
   Queue_t *Q = (Queue_t *)malloc(sizeof(Queue_t));
-  if (Q == NULL)
-  {
-    perror("POINTER_QUEUE_INIT_FAIL");
-    exit(EXIT_FAILURE);
-  }
+  UNDEF(Q, "POINTER_QUEUE_INIT_FAIL");
   Q->words = (input_t **)calloc(size, sizeof(input_t *));
-  if (Q->words == NULL)
-  {
-    perror("BUCKET_QUEUE_INIT_FAIL");
-    exit(EXIT_FAILURE);
-  }
+  UNDEF(Q, "BUCKET_QUEUE_INIT_FAIL");
   Q->maxsize = size;
   Q->head = 0;
   Q->tail = 0;
@@ -52,7 +44,7 @@ input_t *pop_queue(Queue_t *Q)
 
 void free_queue(Queue_t *Q)
 {
-  free(Q->words);
+  FREE_P(Q->words);
 }
 
 void resize(Queue_t *Q)

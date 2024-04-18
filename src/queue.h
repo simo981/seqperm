@@ -6,12 +6,29 @@
 #include <stdatomic.h>
 #define QUEUE_LEN 128
 
-typedef struct input_aux_perm {
+#define UNDEF(NAME, VAR) \
+  if (VAR == NULL)       \
+  {                      \
+    perror(#NAME);       \
+    exit(EXIT_FAILURE);  \
+  }
+
+#define FREE_P(p) \
+  ({              \
+    if (p)        \
+    {             \
+      free(p);    \
+    }             \
+  })
+
+typedef struct input_aux_perm
+{
   char **aux;
   size_t len;
 } input_t;
 
-typedef struct Queue {
+typedef struct Queue
+{
   input_t **words;
   atomic_uint head;
   size_t tail;
