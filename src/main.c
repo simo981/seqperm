@@ -64,6 +64,12 @@ inline size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_
   return idx + 1;
 };
 
+inline size_t add_string_no_copy(char *buff[BUFF], size_t idx, char *to_push)
+{
+  buff[idx] = to_push;
+  return idx + 1;
+};
+
 inline bool palindrome(char *str, size_t len)
 {
   char *p1 = str;
@@ -128,10 +134,9 @@ inline void print_out(char **arr, size_t size)
       saved_len = strings_len;
       for (size_t i = 0; i < saved_len; i++)
       {
-        char copy[BUFF] = {0x0};
-        size_t copy_len = COPY_STRING(copy, all_strings[i]);
-        reverse(copy, copy_len);
-        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+        char *copy = strdup(all_strings[i]);
+        reverse(copy, strlen(copy));
+        strings_len = add_string_no_copy(all_strings, strings_len, copy);
       }
     }
   }
@@ -173,11 +178,10 @@ inline void print_out(char **arr, size_t size)
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
-      char copy[BUFF] = {0x0};
-      size_t copy_len = COPY_STRING(copy, all_strings[i]);
+      char *copy = strdup(all_strings[i]);
       if (leet_encode(copy))
       {
-        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+        strings_len = add_string_no_copy(all_strings, strings_len, copy);
       }
     }
   }
@@ -186,11 +190,10 @@ inline void print_out(char **arr, size_t size)
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
-      char copy[BUFF] = {0x0};
-      size_t copy_len = COPY_STRING(copy, all_strings[i]);
+      char *copy = strdup(all_strings[i]);
       if (upper_encode(copy))
       {
-        strings_len = add_string(all_strings, strings_len, copy, copy_len);
+        strings_len = add_string_no_copy(all_strings, strings_len, copy);
       }
     }
   }
@@ -199,10 +202,9 @@ inline void print_out(char **arr, size_t size)
     saved_len = strings_len;
     for (size_t i = 0; i < saved_len; i++)
     {
-      char copy[BUFF] = {0x0};
-      size_t copy_len = COPY_STRING(copy, all_strings[i]);
-      reverse(copy, copy_len);
-      strings_len = add_string(all_strings, strings_len, copy, copy_len);
+      char *copy = strdup(all_strings[i]);
+      reverse(copy, strlen(copy));
+      strings_len = add_string_no_copy(all_strings, strings_len, copy);
     }
   }
   saved_len = bool_modifiers.only_transform ? saved_len : 0;
@@ -413,30 +415,35 @@ int main(int argc, char **argv)
     }
     case 'c':
     {
-      connectors = (char **)malloc(sizeof(char *) * BUFF);
       char connector_to_copy[2] = {0x0};
       connectors_size = strlen(optarg);
+      connectors = (char **)malloc(sizeof(char *) * connectors_size);
       for (size_t i = 0; i < connectors_size; i++)
       {
         connector_to_copy[0] = optarg[i];
-        connectors[i] = (char *)malloc(sizeof(char) * 2);
-        memccpy(connectors[i], connector_to_copy, '\0', sizeof(char) * 2);
+        connectors[i] = strdup(connector_to_copy);
       }
       break;
     }
     case 'l':
     {
-      last = (char **)malloc(sizeof(char *) * BUFF);
+      size_t _last_size = 1;
+      for (char *p = optarg; *p != '\0'; p++)
+      {
+        if (*p == ',')
+        {
+          _last_size++;
+        }
+      }
+      last = (char **)malloc(sizeof(char *) * _last_size);
       char *token = strtok(optarg, ",");
       size_t x = 0;
       while (token != NULL)
       {
-        last[x] = (char *)malloc(sizeof(char) * (strlen(token) + 1));
-        strcpy(last[x], token);
-        last[x++][strlen(token)] = '\0';
+        last[x++] = strdup(token);
         token = strtok(NULL, ",");
       }
-      last_size = x;
+      last_size = _last_size;
       break;
     }
     case 's':

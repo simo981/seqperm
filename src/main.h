@@ -90,6 +90,7 @@ void *thread_perm(void *in);
 void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min);
 size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len);
 void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min, unsigned short ***out, size_t *out_size);
+size_t add_string_no_copy(char *buff[BUFF], size_t idx, char *to_push);
 unsigned **binomial_coefficient(size_t n, size_t k);
 void free_inputs_optind(void);
 void exit_usage(char *plus);
