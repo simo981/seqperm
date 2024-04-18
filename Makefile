@@ -1,25 +1,8 @@
-DEBUG ?= 0
-ifeq ($(DEBUG), 1)
-    CFLAGS = -g3
-else
-    CFLAGS = -Ofast
-endif
-CC = cc
-TARGET = seqperm
-LINK = -lpthread
-OBJ = main.o queue.o
-.PHONY = clean re
-
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $^ $(LINK) -o $@
-
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c $< -o $@
+all:
+	$(MAKE) -C src
 
 clean:
-	rm *.o $(TARGET) 2>/dev/null
+	$(MAKE) clean -C src
 
-re:
-	make clean
-	make -j
-
+.DEFAULT_GOAL := all
+.PHONY: all clean
