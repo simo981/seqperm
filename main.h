@@ -9,12 +9,48 @@
 #include <string.h>
 #define BUFF 512
 
-#define COPY_STRING(dest, src)          \
-  ({                                    \
-    size_t copy_len = strlen(src);      \
-    memccpy(dest, src, '\0', copy_len); \
-    dest[copy_len] = '\0';              \
-    copy_len;                           \
+#define FREE_PPP(p, fc, size, sc, size2) \
+  ({                                     \
+    for (size_t i = fc; i < size; i++)   \
+    {                                    \
+      FREE_PP(p[i], sc, size2);          \
+    }                                    \
+    FREE_P(p);                           \
+  })
+
+#define FREE_PP(p, fc, size)             \
+  ({                                     \
+    if (p)                               \
+    {                                    \
+      for (size_t j = fc; j < size; j++) \
+      {                                  \
+        FREE_P(p[j]);                    \
+      }                                  \
+      FREE_P(p);                         \
+    }                                    \
+  })
+
+#define FREE_P(p) \
+  ({              \
+    if (p)        \
+    {             \
+      free(p);    \
+    }             \
+  })
+
+#define COPY_STRING(dest, src) ({     \
+  size_t copy_len = strlen(src);      \
+  memccpy(dest, src, '\0', copy_len); \
+  dest[copy_len] = '\0';              \
+  copy_len;                           \
+})
+
+#define CALL_ZERO_SET_TRUE(call, var) \
+  ({                                  \
+    if (call == 0)                    \
+    {                                 \
+      var = true;                     \
+    }                                 \
   })
 
 #define CHECK_TRUE(var, message) \

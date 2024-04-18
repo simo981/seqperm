@@ -10,19 +10,13 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-static size_t max_len = 0;
-static size_t min_len = 0;
-static char **dict;
-static size_t word_size;
-static Queue_t **all_queues = NULL;
-static char **connectors = NULL;
-static unsigned short ***delim_bins = NULL;
+static size_t max_len = 0, min_len = 0, word_size, connectors_size = 0, last_size = 0;
+static char **dict, **connectors = NULL, **last = NULL;
 static char leet_map[128] = {0x0};
-static char **last = NULL;
-static size_t connectors_size = 0;
-static size_t last_size = 0;
 static const char *connector_placeholder = "|";
+static unsigned short ***delim_bins = NULL;
 static modifiers_t bool_modifiers = {0x0};
+static Queue_t **all_queues = NULL;
 
 void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min, unsigned short ***out, size_t *out_size)
 {
@@ -45,21 +39,15 @@ void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, si
 
 void free_inputs_optind(void)
 {
-  if (connectors)
-  {
-    free(connectors);
-  }
-  if (last)
-  {
-    free(last);
-  }
+  FREE_P(connectors);
+  FREE_P(last);
 }
 
 static struct option long_options[] =
     {
         {"upper", required_argument, 0, 'u'},
         {"last", required_argument, 0, 'l'},
-        {"only_transformations", required_argument, 0, 'p'},
+        {"only_transformations", no_argument, 0, 'p'},
         {"reverse", required_argument, 0, 'r'},
         {"leet", required_argument, 0, 'k'},
         {"connectors", required_argument, 0, 'c'},
@@ -80,8 +68,7 @@ inline bool palindrome(char *str, size_t len)
 {
   char *p1 = str;
   char *p2 = str + len - 1;
-  char *mid = str + (size_t)(len / 2);
-  while (p1 < mid && p2 >= mid)
+  while (p1 <= p2)
   {
     if (*p1++ != *p2--)
     {
@@ -108,7 +95,7 @@ inline void print_out(char **arr, size_t size)
   char finalString[BUFF] = {0x0};
   char *all_strings[BUFF] = {0x0};
   size_t run_len = 0, strings_len = 0;
-  size_t lengths[BUFF];
+  size_t lengths[size];
   size_t saved_len = 0;
   size_t reverse_make_sense = false;
   for (size_t i = 0; i < size; i++)
@@ -225,7 +212,7 @@ inline void print_out(char **arr, size_t size)
     {
       printf("%s\n", all_strings[i]);
     }
-    free(all_strings[i]);
+    FREE_P(all_strings[i]);
   }
 }
 
@@ -275,7 +262,8 @@ inline void swap_p(char **f, char **s)
 
 void seq_perm(char **arr, size_t size)
 {
-  unsigned short *P = (unsigned short *)calloc(size, sizeof(unsigned short));
+  unsigned short P[size];
+  memset(&P, 0x0, sizeof(unsigned short) * size);
   size_t i = 1, j;
   while (i < size)
   {
@@ -292,7 +280,6 @@ void seq_perm(char **arr, size_t size)
       P[i++] = 0;
     }
   }
-  free(P);
 }
 
 void *thread_perm(void *in)
@@ -308,12 +295,8 @@ void *thread_perm(void *in)
     }
     print_out(words->aux, words->len);
     seq_perm(words->aux, words->len);
-    for (size_t i = 0; i < words->len; i++)
-    {
-      free(words->aux[i]);
-    }
-    free(words->aux);
-    free(words);
+    FREE_PP(words->aux, 0, words->len);
+    FREE_P(words);
   }
   return NULL;
 }
@@ -334,8 +317,7 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
           char *p = strchr(dict[j], ',');
           if (p == NULL)
           {
-            auxPerm[pointer] = (char *)calloc(strlen(dict[j]) + 1, sizeof(char));
-            memccpy(auxPerm[pointer++], dict[j], '\0', strlen(dict[j]));
+            auxPerm[pointer++] = strdup(dict[j]);
           }
           else
           {
@@ -347,18 +329,17 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
       {
         delim_t delim_words[delim];
         memset(&delim_words, 0x0, sizeof(delim_t) * delim);
-        size_t delim_size = 0;
         for (size_t d = 0; d < delim; d++)
         {
           char *pp = strdup(dict[idx_delim[d]]);
           char *p = strtok(pp, ",");
-          delim_words[delim_size].p1 = strdup(p);
+          delim_words[d].p1 = strdup(p);
           p = strtok(NULL, ",");
-          char *copy = (char *)calloc(strlen(delim_words[delim_size].p1) + strlen(p) + 1, sizeof(char));
-          copy = strcat(copy, delim_words[delim_size].p1);
+          char *copy = (char *)calloc(strlen(delim_words[d].p1) + strlen(p) + 1, sizeof(char));
+          copy = strcat(copy, delim_words[d].p1);
           copy = strcat(copy, p);
-          delim_words[delim_size++].p2 = copy;
-          free(pp);
+          delim_words[d].p2 = copy;
+          FREE_P(pp);
         }
         size_t n_bin_delim = (size_t)(1 << delim);
         unsigned short **bins = delim_bins[delim];
@@ -383,18 +364,11 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
           free(delim_words[i].p1);
           free(delim_words[i].p2);
         }
-        for (size_t i = 0; i < cur; i++)
-        {
-          if (auxPerm[i] != NULL)
-          {
-            free(auxPerm[i]);
-          }
-        }
-        free(auxPerm);
+        FREE_PP(auxPerm, 0, cur);
       }
       else
       {
-        push_queue(all_queues[cur - min], auxPerm, pointer);
+        push_queue(all_queues[cur - min], auxPerm, cur);
       }
     }
     return;
@@ -412,52 +386,31 @@ int main(int argc, char **argv)
 {
   int c, option_index = 0;
   size_t thread_n, queue_n;
-  while ((c = getopt_long(argc, argv, "u:l:p:k:c:s:e:r:", long_options, &option_index)) != -1)
+  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:", long_options, &option_index)) != -1)
   {
     switch (c)
     {
     case 'r':
     {
-      if (strcmp(optarg, "full") == 0)
-      {
-        bool_modifiers.reverse_full = true;
-      }
-      else if (strcmp(optarg, "words") == 0)
-      {
-        bool_modifiers.reverse_words = true;
-      }
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.reverse_full);
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "words"), bool_modifiers.reverse_words);
       break;
     }
     case 'k':
     {
-      if (strcmp(optarg, "full") == 0)
-      {
-        bool_modifiers.leet_full = true;
-      }
-      else if (strcmp(optarg, "vowel") == 0)
-      {
-        bool_modifiers.leet_vowel = true;
-      }
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.leet_full);
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "vowel"), bool_modifiers.leet_vowel);
       break;
     }
     case 'u':
     {
-      if (strcmp(optarg, "full") == 0)
-      {
-        bool_modifiers.upper_full = true;
-      }
-      else if (strcmp(optarg, "first") == 0)
-      {
-        bool_modifiers.upper_first = true;
-      }
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.upper_full);
+      CALL_ZERO_SET_TRUE(strcmp(optarg, "first"), bool_modifiers.upper_first);
       break;
     }
     case 'p':
     {
-      if (optarg[0] == 'Y' || optarg[0] == 'y')
-      {
-        bool_modifiers.only_transform = true;
-      }
+      CALL_ZERO_SET_TRUE(0, bool_modifiers.only_transform);
       break;
     }
     case 'c':
@@ -531,7 +484,6 @@ int main(int argc, char **argv)
   queue_n = max_len - min_len + 1;
   thread_n = (size_t)(max_len * (max_len + 1)) / 2;
   all_queues = (Queue_t **)malloc(sizeof(Queue_t *) * queue_n);
-  // find n_delim
   size_t n_delim = 0;
   size_t optind_copy = optind;
   for (size_t i = 0; i < word_size; i++)
@@ -548,12 +500,12 @@ int main(int argc, char **argv)
     unsigned short *bin = (unsigned short *)calloc(i, sizeof(unsigned short));
     size_t bd_size = 0;
     gen_bin_to_arr(bin, i, 0, i, 0, 0, bin_delim, &bd_size);
-    free(bin);
+    FREE_P(bin);
   }
   delim_bins = bin_delim;
   for (size_t i = 0; i < queue_n; i++)
   {
-    all_queues[i] = default_init_queue(); // need to calculate n of elements given min max delim size ?
+    all_queues[i] = default_init_queue();
   }
   char **input_words = (char **)malloc(sizeof(char *) * word_size);
   for (size_t i = 0; i < word_size; i++)
@@ -568,7 +520,7 @@ int main(int argc, char **argv)
     bin[i] = 1;
   }
   gen_bin_perms(bin, word_size, 0, max_len, 0, min_len);
-  free(bin);
+  FREE_P(bin);
   pthread_t tworker[thread_n];
   memset(&tworker, 0x0, sizeof(tworker));
   size_t pos = 0;
@@ -586,30 +538,15 @@ int main(int argc, char **argv)
   {
     pthread_join(tworker[i], NULL);
   }
-  for (size_t i = 1; i < n_delim + 1; i++)
-  {
-    for (size_t j = 0; j < (1 << i); j++)
-    {
-      free(bin_delim[i][j]);
-    }
-    free(bin_delim[i]);
-  }
-  free(bin_delim);
   for (size_t i = 0; i < queue_n; i++)
   {
     free_queue(all_queues[i]);
-    free(all_queues[i]);
+    FREE_P(all_queues[i]);
   }
-  for (size_t i = 0; i < connectors_size; i++)
-  {
-    free(connectors[i]);
-  }
-  for (size_t i = 0; i < last_size; i++)
-  {
-    free(last[i]);
-  }
-  free_inputs_optind();
-  free(all_queues);
-  free(input_words);
+  FREE_P(all_queues);
+  FREE_P(input_words);
+  FREE_PP(connectors, 0, connectors_size);
+  FREE_PP(last, 0, last_size);
+  FREE_PPP(bin_delim, 1, n_delim + 1, 0, (1 << i));
   return 0;
 }
