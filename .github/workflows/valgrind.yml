@@ -22,5 +22,5 @@ jobs:
       run: |
         make DEBUG=1
         valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --reverse full --upper full --leet full --start 1 --end 5 --only_transformations --last 2024,001,1,355 --connectors .,- hi how ar,e you fi,ne 1>/dev/null
-        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --reverse full --upper full --leet full --start 1 --end 5 --only_transformations --last 2024,001,1,355 --connectors .,- hi how ar,e you fi,ne 1>/dev/null
+        valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --reverse full --upper full --leet full --start 1 --end 5 --last 2024,001,1,355 --connectors .,- hi how ar,e you fi,ne 1>/dev/null
         valgrind --show-leak-kinds=all -s --leak-check=full --track-origins=yes ./seqperm --start 1 --end 10 a b c d e f g h i l 1>/dev/null
