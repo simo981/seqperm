@@ -1,5 +1,4 @@
-#ifndef QUEUE
-#define QUEUE
+#pragma once
 #include <pthread.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -41,4 +40,3 @@ input_t *pop_queue(Queue_t *Q);
 void free_queue(Queue_t *Q);
 void resize(Queue_t *Q);
 Queue_t *default_init_queue();
-#endif

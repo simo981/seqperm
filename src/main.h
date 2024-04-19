@@ -1,5 +1,4 @@
-#ifndef MAIN_H
-#define MAIN_H
+#pragma once
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -12,11 +11,14 @@
 
 #define FREE_PPP(p, fc, size, sc, size2) \
   ({                                     \
-    for (size_t i = fc; i < size; i++)   \
+    if (p)                               \
     {                                    \
-      FREE_PP(p[i], sc, size2);          \
+      for (size_t i = fc; i < size; i++) \
+      {                                  \
+        FREE_PP(p[i], sc, size2);        \
+      }                                  \
+      FREE_P(p);                         \
     }                                    \
-    FREE_P(p);                           \
   })
 
 #define FREE_PP(p, fc, size)             \
@@ -47,21 +49,22 @@
     copy_len;                           \
   })
 
-#define CALL_ZERO_SET_TRUE(call, var) \
-  ({                                  \
-    if (call == 0)                    \
-    {                                 \
-      var = true;                     \
-    }                                 \
+#define CALL_SET(call, eq, var, to) \
+  ({                                \
+    if (call == eq)                 \
+    {                               \
+      var = to;                     \
+    }                               \
   })
 
-#define CHECK_TRUE(var, message) \
-  ({                             \
-    if (var)                     \
-    {                            \
-      free_inputs_optind();      \
-      exit_usage(#message);      \
-    }                            \
+#define CHECK_TRUE(var, message)               \
+  ({                                           \
+    if (var)                                   \
+    {                                          \
+      FREE_PP(connectors, 0, connectors_size); \
+      FREE_PP(last, 0, last_size);             \
+      exit_usage(#message);                    \
+    }                                          \
   })
 
 typedef struct bool_t
@@ -73,7 +76,7 @@ typedef struct bool_t
   uint8_t only_transform : 1;
   uint8_t reverse_words : 1;
   uint8_t reverse_full : 1;
-  uint8_t __padding : 1;
+  uint8_t charset : 1;
 } modifiers_t;
 
 typedef struct delim_t
@@ -106,21 +109,21 @@ void exit_usage(char *plus)
   exit(EXIT_FAILURE);
 }
 
-#define ERR(NAME, VAR, CALL) \
-  errno = 0;                 \
-  VAR = CALL;                \
-  if (errno != 0)            \
-  {                          \
-    perror(#NAME);           \
-    free_inputs_optind();    \
-    exit(EXIT_FAILURE);      \
+#define ERR(NAME, VAR, CALL)                 \
+  errno = 0;                                 \
+  VAR = CALL;                                \
+  if (errno != 0)                            \
+  {                                          \
+    perror(#NAME);                           \
+    FREE_PP(connectors, 0, connectors_size); \
+    FREE_PP(last, 0, last_size);             \
+    exit(EXIT_FAILURE);                      \
   }
 
-#define LOW(NAME, VAR1, VAR2) \
-  if (VAR1 < VAR2)            \
-  {                           \
-    free_inputs_optind();     \
-    exit_usage(#NAME);        \
+#define LOW(NAME, VAR1, VAR2)                \
+  if (VAR1 < VAR2)                           \
+  {                                          \
+    FREE_PP(connectors, 0, connectors_size); \
+    FREE_PP(last, 0, last_size);             \
+    exit_usage(#NAME);                       \
   }
-
-#endif

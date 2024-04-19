@@ -7,7 +7,7 @@ endif
 CC = cc
 TARGET = seqperm
 LINK = -lpthread
-OBJ = main.o queue.o
+OBJ = main.o queue.o random.o
 .PHONY = clean re
 
 $(TARGET): $(OBJ)

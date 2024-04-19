@@ -1,5 +1,6 @@
 #include "main.h"
 #include "queue.h"
+#include "random.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,12 +38,6 @@ void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, si
   }
 }
 
-void free_inputs_optind(void)
-{
-  FREE_P(connectors);
-  FREE_P(last);
-}
-
 static struct option long_options[] =
     {
         {"upper", required_argument, 0, 'u'},
@@ -50,6 +45,8 @@ static struct option long_options[] =
         {"only_transformations", no_argument, 0, 'p'},
         {"reverse", required_argument, 0, 'r'},
         {"leet", required_argument, 0, 'k'},
+        {"random", required_argument, 0, 'm'},
+        {"charset", required_argument, 0, 'i'},
         {"connectors", required_argument, 0, 'c'},
         {"start", required_argument, 0, 's'},
         {"end", required_argument, 0, 'e'},
@@ -386,31 +383,52 @@ void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, siz
 int main(int argc, char **argv)
 {
   int c, option_index = 0;
-  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:", long_options, &option_index)) != -1)
+  enum c_t rand_type = _NULL;
+  size_t rand_times = 0, rand_len = 0;
+  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:m:i:", long_options, &option_index)) != -1)
   {
     switch (c)
     {
+    case 'i':
+    {
+      CALL_SET(strcmp(optarg, "ascii"), 0, rand_type, ASCII);
+      CALL_SET(strcmp(optarg, "num"), 0, rand_type, NUM);
+      CALL_SET(strcmp(optarg, "alpha"), 0, rand_type, ALPHA);
+      CALL_SET(strcmp(optarg, "alphalower"), 0, rand_type, ALPHALOWER);
+      CALL_SET(strcmp(optarg, "alphaupper"), 0, rand_type, ALPHAUPPER);
+      CALL_SET(strcmp(optarg, "alphanum"), 0, rand_type, ALPHANUM);
+      CALL_SET(strcmp(optarg, "alphanumupper"), 0, rand_type, ALPHANUMUPPER);
+      break;
+    }
+    case 'm':
+    {
+      char *token = strtok(optarg, ",");
+      ERR("random times can't be less than 0 or null", rand_times, strtoul(token, NULL, 10));
+      token = strtok(NULL, ",");
+      ERR("random length can't be less than 0 or null", rand_len, strtoul(token, NULL, 10));
+      break;
+    }
     case 'r':
     {
-      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.reverse_full);
-      CALL_ZERO_SET_TRUE(strcmp(optarg, "words"), bool_modifiers.reverse_words);
+      CALL_SET(strcmp(optarg, "full"), 0, bool_modifiers.reverse_full, true);
+      CALL_SET(strcmp(optarg, "words"), 0, bool_modifiers.reverse_words, true);
       break;
     }
     case 'k':
     {
-      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.leet_full);
-      CALL_ZERO_SET_TRUE(strcmp(optarg, "vowel"), bool_modifiers.leet_vowel);
+      CALL_SET(strcmp(optarg, "full"), 0, bool_modifiers.leet_full, true);
+      CALL_SET(strcmp(optarg, "vowel"), 0, bool_modifiers.leet_vowel, true);
       break;
     }
     case 'u':
     {
-      CALL_ZERO_SET_TRUE(strcmp(optarg, "full"), bool_modifiers.upper_full);
-      CALL_ZERO_SET_TRUE(strcmp(optarg, "first"), bool_modifiers.upper_first);
+      CALL_SET(strcmp(optarg, "full"), 0, bool_modifiers.upper_full, true);
+      CALL_SET(strcmp(optarg, "first"), 0, bool_modifiers.upper_first, true);
       break;
     }
     case 'p':
     {
-      CALL_ZERO_SET_TRUE(0, bool_modifiers.only_transform);
+      CALL_SET(0, 0, bool_modifiers.only_transform, true);
       break;
     }
     case 'c':
@@ -448,12 +466,12 @@ int main(int argc, char **argv)
     }
     case 's':
     {
-      ERR("min_len can't be less than 0 or null", min_len, strtoul(optarg, NULL, 10));
+      ERR("min_len in normal mode can't be less than 0 or null", min_len, strtoul(optarg, NULL, 10));
       break;
     }
     case 'e':
     {
-      ERR("max_len can't be less than 0 or null", max_len, strtoul(optarg, NULL, 10));
+      ERR("max_len in normal mode can't be less than 0 or null", max_len, strtoul(optarg, NULL, 10));
       break;
     }
     case '?':
@@ -468,10 +486,24 @@ int main(int argc, char **argv)
     }
   }
 
-  CHECK_TRUE(!min_len, "max_len must be stated");
-  CHECK_TRUE(!max_len, "min_len must be stated");
-  LOW("max_len must be greater than min_len", max_len, min_len);
-  CHECK_TRUE(optind == argc, "words not provided");
+  CHECK_TRUE(optind == argc && rand_type == _NULL, "words or charset not provided");
+
+  if (rand_len || rand_times)
+  {
+    CHECK_TRUE(!rand_len, "rand_len must be stated in rand mode");
+    CHECK_TRUE(!rand_times, "rand_times must be stated in rand mode");
+    char *charset = rand_type != _NULL ? NULL : strdup(argv[optind]);
+    rand_type = rand_type == _NULL ? USER : rand_type;
+    main_random(rand_times, rand_len, rand_type, charset, N_THREAD);
+    FREE_P(charset);
+    FREE_PP(connectors, 0, connectors_size);
+    FREE_PP(last, 0, last_size);
+    return 0;
+  }
+
+  CHECK_TRUE(!min_len, "max_len must be stated in normal mode");
+  CHECK_TRUE(!max_len, "min_len must be stated in normal mode");
+  LOW("max_len in normal mode must be greater than min_len", max_len, min_len);
 
   leet_map['a'] = leet_map['A'] = '4';
   leet_map['e'] = leet_map['E'] = '3';
