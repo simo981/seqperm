@@ -37,8 +37,8 @@ void push_queue(Queue_t *Q, char **aux, size_t len)
 input_t *pop_queue(Queue_t *Q)
 {
   input_t *aux = NULL;
-  unsigned int idx = atomic_fetch_add(&Q->head, 1);
-  aux = idx < Q->maxsize ? Q->words[idx] : NULL;
+  long idx = atomic_fetch_sub(&Q->head, 1);
+  aux = idx >= 0 ? Q->words[idx] : NULL;
   return aux;
 }
 

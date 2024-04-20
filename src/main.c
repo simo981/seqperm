@@ -552,6 +552,7 @@ int main(int argc, char **argv)
   }
   gen_bin_perms(bin, word_size, 0, max_len, 0, min_len);
   FREE_P(bin);
+  global_queue->head = global_queue->tail - 1;
   pthread_t tworker[N_THREAD];
   memset(&tworker, 0x0, sizeof(tworker));
   size_t pos = 0;

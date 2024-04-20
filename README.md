@@ -85,3 +85,17 @@ We want to generate 1M strings of length 12 with default charset ascii
 ```
 ./seqperm --random 1000000,12 --charset ascii
 ```
+## Benchmarks (vs itertools)
+### Apple M1 with N_THREADS = 8
+Refer to total value for real execution time
+
+Trying to generate all permutations from length 1 to length 11 of `a b c d e f g h i l m`
+```
+seqperm 30,06s user 60,88s system 26,947 total
+itertools 72,94s user 0,06s system 1:13,10 total
+```
+Trying to generate all permutations from length 1 to length 8 of `a b c d e f g h i l m n o p q`
+```
+seqperm 91,48s user 219,63s system 1:21,62 total
+itertools 169,68s user 0,13s system 2:50,11 total
+```

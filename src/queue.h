@@ -29,7 +29,7 @@ typedef struct input_aux_perm
 typedef struct Queue
 {
   input_t **words;
-  atomic_uint head;
+  atomic_long head;
   size_t tail;
   size_t maxsize;
 } Queue_t;

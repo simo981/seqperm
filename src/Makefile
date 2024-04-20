@@ -2,7 +2,7 @@ DEBUG ?= 0
 ifeq ($(DEBUG), 1)
     CFLAGS = -g3
 else
-    CFLAGS = -Ofast
+    CFLAGS = -Ofast -march=native
 endif
 CC = cc
 TARGET = seqperm
