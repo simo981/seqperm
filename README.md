@@ -1,11 +1,11 @@
-# Multi-Threaded word list generator (no repetition)
+# Multi-Threaded word list generator (no repetition) or permutation calculator
 ![Make](https://github.com/simo981/seqperm/actions/workflows/c-cpp.yml/badge.svg)
 ![CodeQL](https://github.com/simo981/seqperm/actions/workflows/codeql.yml/badge.svg)
 ![Valgrind](https://github.com/simo981/seqperm/actions/workflows/valgrind.yml/badge.svg)
 ## Parameters
 ```
---start        <mininum words to concatenate>
---end          <maximum words to concatenate>
+--start        <mininum words/chars to concatenate>
+--end          <maximum words/chars to concatenate>
 ```
 ### Modifiers
 ```
@@ -57,6 +57,14 @@ You can also use your own charset, passed after the parameter --random x,y
 3) $ ./seperm <parameters>
 ```
 ## Sample usage normal mode
+We want all permutation without repetition of ``` a b c d e f g h i l m ``` of length 11.
+```
+./seqperm --start 11 --end 11 a b c d e f g h i l m
+```
+We want all permutation without repetition of ``` a b c d e f g h i l m ``` from length 1 to length 11.
+```
+./seqperm --start 1 --end 11 a b c d e f g h i l m
+```
 We want all permutation without repetition of ``` a b c d e f g h i l m ``` of 3/4/5 characters length with connectors ```,``` and ```.``` between chars and numbers ```0``` and ```1``` at the end. 
 
 We dont't want any uppercase first character.
