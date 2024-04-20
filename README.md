@@ -99,3 +99,10 @@ Trying to generate all permutations from length 1 to length 8 of `a b c d e f g 
 seqperm 91,48s user 219,63s system 1:21,62 total
 itertools 169,68s user 0,13s system 2:50,11 total
 ```
+Trying to generate all permutations of length 11 of `a b c d e f g h i l m`  
+In this case there's only one subset, so only one thread will be used in seqperm   
+We do this to make fair compare about a single n! permutation
+```
+seqperm 6,49s user 0,01s system 99% cpu 6,510 total
+itertools 28,18s user 0,03s system 99% cpu 28,310 total
+```
