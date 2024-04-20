@@ -19,6 +19,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: apt install dependency
       run: |
+        sudo apt-get update
         sudo apt-get -y install valgrind
     - name: valgrind check
       run: |
