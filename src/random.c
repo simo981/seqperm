@@ -43,8 +43,7 @@ void *thread_random(void *in)
 
 void main_random(size_t times, size_t length, enum c_t type, char *charset, size_t N_THREAD_)
 {
-    dataset = ascii;
-    dataset = type == USER && charset != NULL ? charset : dataset;
+    dataset = type == USER && charset != NULL ? charset : ascii;
     pthread_t tworker[N_THREAD_];
     memset(&tworker, 0x0, sizeof(tworker));
     size_t ttimes = times / N_THREAD_;
