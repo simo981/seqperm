@@ -11,7 +11,7 @@
 
 char *ascii = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 char *dataset;
-const size_t se[8][2] = {{0, 96}, {0, 10}, {10, 62}, {36, 62}, {10, 36}, {0, 62}, {0, 36}};
+const size_t se[8][2] = {{0, 95}, {0, 10}, {10, 62}, {36, 62}, {10, 36}, {0, 62}, {0, 36}};
 
 typedef struct random_t
 {
@@ -30,9 +30,9 @@ void *thread_random(void *in)
     end = x->type != USER ? se[x->type][1] : strlen(dataset);
     for (size_t i = 0; i < x->times; i++)
     {
-        for (size_t i = 0; i < x->size; i++)
+        for (size_t j = 0; j < x->size; j++)
         {
-            out[i] = dataset[(rand_r(&myseed) % (end - start)) + start];
+            out[j] = dataset[(rand_r(&myseed) % (end - start)) + start];
         }
         printf("%s\n", out);
     }
