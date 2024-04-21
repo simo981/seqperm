@@ -1,4 +1,4 @@
-# Multi-Threaded word list generator (no repetition) or permutation calculator
+# Multi-Threaded word list generator (no repetition) and permutation generator
 ![Make](https://github.com/simo981/seqperm/actions/workflows/c-cpp.yml/badge.svg)
 ![CodeQL](https://github.com/simo981/seqperm/actions/workflows/codeql.yml/badge.svg)
 ![Valgrind](https://github.com/simo981/seqperm/actions/workflows/valgrind.yml/badge.svg)
