@@ -42,11 +42,6 @@ input_t *pop_queue(Queue_t *Q)
   return aux;
 }
 
-void free_queue(Queue_t *Q)
-{
-  FREE_P(Q->words);
-}
-
 void resize(Queue_t *Q)
 {
   size_t old_size = Q->maxsize;

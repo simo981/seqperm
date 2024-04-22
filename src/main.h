@@ -77,6 +77,7 @@ typedef struct bool_t
   uint8_t reverse_words : 1;
   uint8_t reverse_full : 1;
   uint8_t charset : 1;
+  uint8_t memory : 1;
 } modifiers_t;
 
 typedef struct delim_t
@@ -85,11 +86,11 @@ typedef struct delim_t
   char *p2;
 } delim_t;
 
-void print_out(char **arr, size_t size);
+void print_out(char **arr, size_t size, size_t queue_pos);
 void print_f_maiusc(char **arr, char *string);
 void print_number(char **arr, char *finalString, size_t run_len);
 void swap_p(char **f, char **s);
-void seq_perm(char **arr, size_t size);
+void seq_perm(char **arr, size_t size, size_t queue_pos);
 void *thread_perm(void *in);
 void gen_bin_perms(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min);
 size_t add_string(char *buff[BUFF], size_t idx, char *to_push, size_t to_push_len);
