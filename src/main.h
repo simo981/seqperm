@@ -8,6 +8,7 @@
 #include <string.h>
 #define BUFF 512
 #define N_THREAD 8
+#define PRINT_BUFF 64 * 1024 * 1024
 
 #define FREE_PPP(p, fc, size, sc, size2) \
   ({                                     \
@@ -106,7 +107,7 @@ bool palindrome(char *str, size_t len);
 
 void exit_usage(char *plus)
 {
-  printf("%s\n./seqperm --reverse full/words --upper full/first --leet full/vowel --start <min words> --end <max words> --last N1,N2,... --only_transformations  --connectors ... w1 w2 w3 w4\n", plus);
+  printf("%s\n./seqperm --reverse full/words --upper full/first --leet full/vowel --start <min words> --end <max words> --last N1,N2,... --only_transformations? --memory?  --connectors ... w1 w2 w3 w4\n", plus);
   exit(EXIT_FAILURE);
 }
 
