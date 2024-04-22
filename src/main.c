@@ -212,6 +212,10 @@ inline void print_out(char **arr, size_t size, size_t queue_pos)
     char **copy_buff = (char **)malloc(sizeof(char *) * (strings_len - saved_len));
     memcpy(copy_buff, all_strings + saved_len, sizeof(char *) * (strings_len - saved_len));
     push_queue(f_buffer[queue_pos], copy_buff, (strings_len - saved_len));
+    for (size_t i = 0; i < saved_len; i++)
+    {
+      free(all_strings[i]);
+    }
   }
   else
   {
