@@ -402,6 +402,7 @@ int main(int argc, char **argv)
   int c, option_index = 0;
   enum c_t rand_type = _NULL;
   size_t rand_times = 0, rand_len = 0;
+  setvbuf(stdout, NULL, _IOFBF, PRINT_BUFF);
   while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:m:i:x", long_options, &option_index)) != -1)
   {
     switch (c)
