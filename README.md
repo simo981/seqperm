@@ -21,6 +21,10 @@
 if one or more modifiers are setted, print only the transformations created with all modifiers instead of printing each one
 ```
 ```
+--memory
+avoid print in each thread and print only when threads join, better performances but all permutations are keeped in memory
+```
+```
 All the words with the delimiter "," (ex. fish,es) will be considered as shortened permutation, in this case only short string or full string will be in a single permutation.
 So, if you have in input fishes and fish and max word = 2, the permutation fishesfish will be created.
 Instead, if "," is used, and in input you have fish,es the permutation fishesfish will not be created, but you'll have (for example) fishOTHERWORD fishesOTHERWORD
@@ -95,7 +99,8 @@ We want to generate 1M strings of length 12 with default charset ascii
 ```
 ## Benchmarks (vs itertools)
 ### Apple M1 with N_THREADS = 8
-Refer to total value for real execution time
+Refer to total value for real execution time  
+print functions deal serious bottleneck
 
 Trying to generate all permutations from length 1 to length 11 of `a b c d e f g h i l m`
 ```
