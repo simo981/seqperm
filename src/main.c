@@ -18,6 +18,7 @@ static const char *connector_placeholder = "|";
 static unsigned short ***delim_bins = NULL;
 static modifiers_t bool_modifiers = {0x0};
 static Queue_t *global_queue = NULL;
+static Queue_t *f_buffer[N_THREAD];
 
 void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min, unsigned short ***out, size_t *out_size)
 {
@@ -44,6 +45,7 @@ static struct option long_options[] =
         {"last", required_argument, 0, 'l'},
         {"only_transformations", no_argument, 0, 'p'},
         {"reverse", required_argument, 0, 'r'},
+        {"memory", no_argument, 0, 'x'},
         {"leet", required_argument, 0, 'k'},
         {"random", required_argument, 0, 'm'},
         {"charset", required_argument, 0, 'i'},
@@ -93,7 +95,7 @@ inline void reverse(char *str, size_t len)
   }
 }
 
-inline void print_out(char **arr, size_t size)
+inline void print_out(char **arr, size_t size, size_t queue_pos)
 {
   char finalString[BUFF] = {0x0};
   char *all_strings[BUFF] = {0x0};
@@ -205,13 +207,26 @@ inline void print_out(char **arr, size_t size)
     }
   }
   saved_len = bool_modifiers.only_transform ? saved_len : 0;
-  for (size_t i = 0; i < strings_len; i++)
+  if (bool_modifiers.memory)
   {
-    if (i >= saved_len)
+    char **copy_buff = (char **)malloc(sizeof(char *) * (strings_len - saved_len));
+    memcpy(copy_buff, all_strings + saved_len, sizeof(char *) * (strings_len - saved_len));
+    push_queue(f_buffer[queue_pos], copy_buff, (strings_len - saved_len));
+    for (size_t i = 0; i < saved_len; i++)
     {
-      printf("%s\n", all_strings[i]);
+      free(all_strings[i]);
     }
-    FREE_P(all_strings[i]);
+  }
+  else
+  {
+    for (size_t i = 0; i < strings_len; i++)
+    {
+      if (i >= saved_len)
+      {
+        printf("%s\n", all_strings[i]);
+      }
+      FREE_P(all_strings[i]);
+    }
   }
 }
 
@@ -259,7 +274,7 @@ inline void swap_p(char **f, char **s)
   *s = t;
 }
 
-void seq_perm(char **arr, size_t size)
+void seq_perm(char **arr, size_t size, size_t queue_pos)
 {
   unsigned short P[size];
   memset(&P, 0x0, sizeof(unsigned short) * size);
@@ -270,7 +285,7 @@ void seq_perm(char **arr, size_t size)
     {
       j = (i & 1) * P[i];
       swap_p(&arr[i], &arr[j]);
-      print_out(arr, size);
+      print_out(arr, size, queue_pos);
       P[i]++;
       i = 1;
     }
@@ -283,6 +298,7 @@ void seq_perm(char **arr, size_t size)
 
 void *thread_perm(void *in)
 {
+  size_t queue_pos = bool_modifiers.memory ? *(size_t *)in : 0;
   input_t *words;
   for (;;)
   {
@@ -291,11 +307,12 @@ void *thread_perm(void *in)
     {
       break;
     }
-    print_out(words->aux, words->len);
-    seq_perm(words->aux, words->len);
+    print_out(words->aux, words->len, queue_pos);
+    seq_perm(words->aux, words->len, queue_pos);
     FREE_PP(words->aux, 0, words->len);
     FREE_P(words);
   }
+  FREE_P(in);
   return NULL;
 }
 
@@ -385,7 +402,8 @@ int main(int argc, char **argv)
   int c, option_index = 0;
   enum c_t rand_type = _NULL;
   size_t rand_times = 0, rand_len = 0;
-  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:m:i:", long_options, &option_index)) != -1)
+  setvbuf(stdout, NULL, _IOFBF, PRINT_BUFF);
+  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:m:i:x", long_options, &option_index)) != -1)
   {
     switch (c)
     {
@@ -429,6 +447,11 @@ int main(int argc, char **argv)
     case 'p':
     {
       CALL_SET(0, 0, bool_modifiers.only_transform, true);
+      break;
+    }
+    case 'x':
+    {
+      CALL_SET(0, 0, bool_modifiers.memory, true);
       break;
     }
     case 'c':
@@ -558,13 +581,43 @@ int main(int argc, char **argv)
   size_t pos = 0;
   for (size_t i = 0; i < N_THREAD; i++)
   {
-    pthread_create(&tworker[i], NULL, thread_perm, NULL);
+    if (bool_modifiers.memory)
+    {
+      size_t *ii = malloc(sizeof(size_t));
+      *ii = i;
+      f_buffer[i] = default_init_queue();
+      pthread_create(&tworker[i], NULL, thread_perm, (void *)ii);
+    }
+    else
+    {
+      pthread_create(&tworker[i], NULL, thread_perm, NULL);
+    }
   }
   for (size_t i = 0; i < N_THREAD; i++)
   {
     pthread_join(tworker[i], NULL);
   }
-  free_queue(global_queue);
+  if (bool_modifiers.memory)
+  {
+    for (size_t k = 0; k < N_THREAD; k++)
+    {
+      Queue_t *current_buffer = f_buffer[k];
+      for (size_t i = 0; i < current_buffer->tail; i++)
+      {
+        input_t *current_words = current_buffer->words[i];
+        for (size_t j = 0; j < current_words->len; j++)
+        {
+          printf("%s\n", current_words->aux[j]);
+          free(current_words->aux[j]);
+        }
+        free(current_words->aux);
+        free(current_words);
+      }
+      FREE_P(current_buffer->words);
+      FREE_P(current_buffer);
+    }
+  }
+  FREE_P(global_queue->words);
   FREE_P(global_queue);
   FREE_P(input_words);
   FREE_PP(connectors, 0, connectors_size);
