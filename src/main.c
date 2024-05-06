@@ -19,6 +19,8 @@ static unsigned short ***delim_bins = NULL;
 static modifiers_t bool_modifiers = {0x0};
 static Queue_t *global_queue = NULL;
 static Queue_t *f_buffer[N_THREAD];
+static size_t memory_max = 0;
+static atomic_bool print_exit = false;
 
 void gen_bin_to_arr(unsigned short *arr, size_t size, size_t idx, size_t max, size_t cur, size_t min, unsigned short ***out, size_t *out_size)
 {
@@ -45,7 +47,7 @@ static struct option long_options[] =
         {"last", required_argument, 0, 'l'},
         {"only_transformations", no_argument, 0, 'p'},
         {"reverse", required_argument, 0, 'r'},
-        {"memory", no_argument, 0, 'x'},
+        {"memory", required_argument, 0, 'x'},
         {"leet", required_argument, 0, 'k'},
         {"random", required_argument, 0, 'm'},
         {"charset", required_argument, 0, 'i'},
@@ -99,9 +101,8 @@ inline void print_out(char **arr, size_t size, size_t queue_pos)
 {
   char finalString[BUFF] = {0x0};
   char *all_strings[BUFF] = {0x0};
-  size_t run_len = 0, strings_len = 0;
+  size_t run_len = 0, strings_len = 0, saved_len = 0;
   size_t lengths[size];
-  size_t saved_len = 0;
   size_t reverse_make_sense = false;
   for (size_t i = 0; i < size; i++)
   {
@@ -211,6 +212,12 @@ inline void print_out(char **arr, size_t size, size_t queue_pos)
   {
     char **copy_buff = (char **)malloc(sizeof(char *) * (strings_len - saved_len));
     memcpy(copy_buff, all_strings + saved_len, sizeof(char *) * (strings_len - saved_len));
+    if (memory_max > 0)
+    {
+      while (f_buffer[queue_pos]->cur >= memory_max)
+      {
+      }
+    }
     push_queue(f_buffer[queue_pos], copy_buff, (strings_len - saved_len));
     for (size_t i = 0; i < saved_len; i++)
     {
@@ -233,14 +240,13 @@ inline void print_out(char **arr, size_t size, size_t queue_pos)
 inline bool leet_encode(char *str)
 {
   bool encoded = false;
-  while (*str != '\0')
+  for (char *ptr = str; *ptr != '\0'; ptr++)
   {
-    if (leet_map[*str])
+    if (leet_map[*ptr])
     {
-      *str = leet_map[*str];
+      *ptr = leet_map[*ptr];
       encoded = true;
     }
-    str++;
   }
   return encoded;
 }
@@ -294,6 +300,50 @@ void seq_perm(char **arr, size_t size, size_t queue_pos)
       P[i++] = 0;
     }
   }
+}
+
+void swap_qp(Queue_t *q1, Queue_t *q2)
+{
+  Queue_t *tmp = q1;
+  q1 = q2;
+  q2 = tmp;
+}
+
+void *thread_print(void *in)
+{
+  Queue_t *iter_queue[N_THREAD];
+  memcpy(iter_queue, f_buffer, sizeof(Queue_t *) * N_THREAD);
+  long iter_size = N_THREAD;
+  for (;;)
+  {
+    for (long i = iter_size - 1; i >= 0; i--)
+    {
+      for (size_t j = 0; j < PRINT_THRESH; j++)
+      {
+        input_t *pp = pop_list(iter_queue[i]);
+        if (pp == NULL)
+        {
+          if (print_exit == true)
+          {
+            swap_qp(iter_queue[i], iter_queue[--iter_size]);
+          }
+          break;
+        }
+        for (size_t x = 0; x < pp->len; x++)
+        {
+          printf("%s\n", pp->aux[x]);
+          FREE_P(pp->aux[x]);
+        }
+        FREE_P(pp->aux);
+        FREE_P(pp);
+      }
+    }
+    if (!iter_size)
+    {
+      return NULL;
+    }
+  }
+  return NULL;
 }
 
 void *thread_perm(void *in)
@@ -403,7 +453,7 @@ int main(int argc, char **argv)
   enum c_t rand_type = _NULL;
   size_t rand_times = 0, rand_len = 0;
   setvbuf(stdout, NULL, _IOFBF, PRINT_BUFF);
-  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:m:i:x", long_options, &option_index)) != -1)
+  while ((c = getopt_long(argc, argv, "u:l:pk:c:s:e:r:m:i:x:", long_options, &option_index)) != -1)
   {
     switch (c)
     {
@@ -452,6 +502,7 @@ int main(int argc, char **argv)
     case 'x':
     {
       CALL_SET(0, 0, bool_modifiers.memory, true);
+      ERR("memory max size can't be less than 0", memory_max, strtoul(optarg, NULL, 10));
       break;
     }
     case 'c':
@@ -576,7 +627,7 @@ int main(int argc, char **argv)
   gen_bin_perms(bin, word_size, 0, max_len, 0, min_len);
   FREE_P(bin);
   global_queue->head = global_queue->tail - 1;
-  pthread_t tworker[N_THREAD];
+  pthread_t tworker[N_THREAD], print_w = {0};
   memset(&tworker, 0x0, sizeof(tworker));
   size_t pos = 0;
   for (size_t i = 0; i < N_THREAD; i++)
@@ -593,28 +644,49 @@ int main(int argc, char **argv)
       pthread_create(&tworker[i], NULL, thread_perm, NULL);
     }
   }
+  if (memory_max != 0 && bool_modifiers.memory)
+  {
+    pthread_create(&print_w, NULL, thread_print, NULL);
+  }
   for (size_t i = 0; i < N_THREAD; i++)
   {
     pthread_join(tworker[i], NULL);
   }
+  print_exit = true;
+  if (memory_max != 0 && bool_modifiers.memory)
+  {
+    pthread_join(print_w, NULL);
+  }
   if (bool_modifiers.memory)
   {
-    for (size_t k = 0; k < N_THREAD; k++)
+    if (memory_max == 0)
     {
-      Queue_t *current_buffer = f_buffer[k];
-      for (size_t i = 0; i < current_buffer->tail; i++)
+      for (size_t k = 0; k < N_THREAD; k++)
       {
-        input_t *current_words = current_buffer->words[i];
-        for (size_t j = 0; j < current_words->len; j++)
+        Queue_t *current_buffer = f_buffer[k];
+        for (size_t i = 0; i < current_buffer->tail; i++)
         {
-          printf("%s\n", current_words->aux[j]);
-          free(current_words->aux[j]);
+          input_t *current_words = current_buffer->words[i];
+          for (size_t j = 0; j < current_words->len; j++)
+          {
+            printf("%s\n", current_words->aux[j]);
+            free(current_words->aux[j]);
+          }
+          free(current_words->aux);
+          free(current_words);
         }
-        free(current_words->aux);
-        free(current_words);
+        FREE_P(current_buffer->words);
+        FREE_P(current_buffer);
       }
-      FREE_P(current_buffer->words);
-      FREE_P(current_buffer);
+    }
+    else
+    {
+      for (size_t k = 0; k < N_THREAD; k++)
+      {
+        Queue_t *current_buffer = f_buffer[k];
+        FREE_P(current_buffer->words);
+        FREE_P(current_buffer);
+      }
     }
   }
   FREE_P(global_queue->words);

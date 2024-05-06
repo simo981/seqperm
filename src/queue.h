@@ -30,6 +30,8 @@ typedef struct Queue
 {
   input_t **words;
   atomic_long head;
+  atomic_size_t cur;
+  atomic_flag taking;
   size_t tail;
   size_t maxsize;
 } Queue_t;
@@ -38,5 +40,6 @@ Queue_t *init_queue(size_t size);
 void push_queue(Queue_t *Q, char **aux, size_t len);
 input_t *pop_queue(Queue_t *Q);
 void free_queue(Queue_t *Q);
+input_t *pop_list(Queue_t *Q);
 void resize(Queue_t *Q);
 Queue_t *default_init_queue();

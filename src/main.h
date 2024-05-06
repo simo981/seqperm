@@ -7,8 +7,9 @@
 #include <stdbool.h>
 #include <string.h>
 #define BUFF 512
-#define N_THREAD 8
+#define N_THREAD 7
 #define PRINT_BUFF 64 * 1024 * 1024
+#define PRINT_THRESH 1024
 
 #define FREE_PPP(p, fc, size, sc, size2) \
   ({                                     \
@@ -101,6 +102,7 @@ unsigned **binomial_coefficient(size_t n, size_t k);
 void free_inputs_optind(void);
 void exit_usage(char *plus);
 bool leet_encode(char *str);
+void *thread_print(void *in);
 bool upper_encode(char *str);
 void reverse(char *str, size_t len);
 bool palindrome(char *str, size_t len);
